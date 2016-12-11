@@ -9,11 +9,9 @@
             [ring.util.response :as resp]
             [hiccup.page :as h]))
 
-(def providers [{:name "Google" :url "https://www.google.com/accounts/o8/id"}
-                {:name "Yahoo" :url "http://me.yahoo.com/"}
+(def providers [{:name "Yahoo" :url "http://me.yahoo.com/"}
                 {:name "AOL" :url "http://openid.aol.com/"}
-                {:name "Wordpress.com" :url "http://username.wordpress.com"}
-                {:name "MyOpenID" :url "http://username.myopenid.com/"}])
+                {:name "Wordpress.com" :url "http://username.wordpress.com"}])
 
 (defroutes routes
   (GET "/" req

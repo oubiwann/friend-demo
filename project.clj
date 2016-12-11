@@ -6,8 +6,12 @@
   :resource-paths ["resources"]
   :source-paths ["src/clj"]
   :min-lein-version "2.0.0"
-  :dependencies [[com.cemerick/friend "0.2.3"]
+  :dependencies [[org.clojure/clojure "1.8.0"]
+                 [com.cemerick/friend "0.2.3"]
                  [compojure "1.6.0-beta2"]
+                 [clj-http "3.4.1"]
+                 [clojusc/twig "0.3.1-SNAPSHOT"]
+                 [com.cemerick/url "0.1.1"]
                  ;; only used for the oauth-related demos
                  [clojusc/friend-oauth2 "0.1.3"]
                  ;; only used to generate demo app pages

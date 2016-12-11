@@ -11,7 +11,8 @@
 
 (def providers [{:name "Yahoo" :url "http://me.yahoo.com/"}
                 {:name "AOL" :url "http://openid.aol.com/"}
-                {:name "Wordpress.com" :url "http://username.wordpress.com"}])
+                {:name "Wordpress.com" :url "http://username.wordpress.com"}
+                {:name "Ubuntu" :url "https://login.launchpad.net/+openid"}])
 
 (defroutes routes
   (GET "/" req

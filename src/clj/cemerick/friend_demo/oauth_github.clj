@@ -7,6 +7,7 @@
             (cemerick.friend [workflows :as workflows]
                              [credentials :as creds])
             [friend-oauth2.workflow :as oauth2]
+            [friend-oauth2.util :as oauth2-util]
             [clj-http.client :as http]
             [cheshire.core :as json]
             [compojure.core :as compojure :refer (GET defroutes)]
@@ -44,13 +45,13 @@
           [:p "Logged in as GitHub user " [:strong (get-github-handle (:current identity))]
            " with GitHub OAuth2 access token " (:current identity)]
           [:h3 [:a {:href "github.callback"} "Login with GitHub"]])
-        
+
         (when-let [{access-token :access_token} (friend/current-authentication req)]
           [:div
            [:h3 "Some of your public repositories on GitHub, obtained using the access token above:"]
            [:ul (for [repo (get-public-repos access-token)]
                   [:li (:full-name repo)])]])
-        
+
         [:h3 "Authorization demos"]
         [:p "Each of these links require particular roles (or, any authentication) to access. "
             "If you're not authenticated, you will be redirected to a dedicated login page. "
@@ -81,14 +82,14 @@
   {:authentication-uri {:url "https://github.com/login/oauth/authorize"
                         :query {:client_id (:client-id client-config)
                                 :response_type "code"
-                                :redirect_uri (oauth2/format-config-uri client-config)
+                                :redirect_uri (oauth2-util/format-config-uri client-config)
                                 :scope ""}}
 
    :access-token-uri {:url "https://github.com/login/oauth/access_token"
                       :query {:client_id (:client-id client-config)
                               :client_secret (:client-secret client-config)
                               :grant_type "authorization_code"
-                              :redirect_uri (oauth2/format-config-uri client-config)
+                              :redirect_uri (oauth2-util/format-config-uri client-config)
                               :code ""}}})
 
 (def page (handler/site

@@ -1,4 +1,4 @@
-(ns ^{:name "#{Google, Yahoo, AOL, Wordpress, +} via OpenID"
+(ns ^{:name "#{Yahoo, AOL, Wordpress, Ubuntu} via OpenID"
       :doc "Using OpenID to authenticate with various services."}
   cemerick.friend-demo.openid
   (:require [cemerick.friend-demo.misc :as misc]

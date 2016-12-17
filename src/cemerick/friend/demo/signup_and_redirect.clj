@@ -3,8 +3,8 @@
            space."}
   cemerick.friend.demo.signup-and-redirect
   (:require [cemerick.friend.demo [content :as content]
-                                  [misc :as misc]
-                                  [users :as users :refer [users]]]
+                                  [users :as users :refer [users]]
+                                  [util :as util]]
             [cemerick.friend :as friend]
             (cemerick.friend [workflows :as workflows]
                              [credentials :as creds])
@@ -62,12 +62,12 @@
            "If you're not authenticated, you will be redirected to a dedicated login page. "
            "If you're already authenticated, but do not meet the authorization requirements "
            "(e.g. you don't have the proper role), then you'll get an Unauthorized HTTP response."]
-       [:ul [:li (e/link-to (misc/context-uri req "role-user") "Requires the `user` role")]
-        [:li (e/link-to (misc/context-uri req "role-admin") "Requires the `admin` role")]
-        [:li (e/link-to (misc/context-uri req "requires-authentication")
+       [:ul [:li (e/link-to (util/context-uri req "role-user") "Requires the `user` role")]
+        [:li (e/link-to (util/context-uri req "role-admin") "Requires the `admin` role")]
+        [:li (e/link-to (util/context-uri req "requires-authentication")
                "Requires any authentication, no specific role requirement")]]
        [:h3 "Logging out"]
-       [:p (e/link-to (misc/context-uri req "logout") "Click here to log out") "."])))
+       [:p (e/link-to (util/context-uri req "logout") "Click here to log out") "."])))
   (GET "/login" req
     (h/html5 content/head (content/body login-form)))
   (POST "/signup" {{:keys [username password confirm] :as params} :params :as req}
@@ -76,7 +76,7 @@
           (let [user (create-user (select-keys params [:username :password :admin]))]
             ;; HERE IS WHERE YOU'D PUSH THE USER INTO YOUR DATABASES if desired
             (friend/merge-authentication
-              (resp/redirect (misc/context-uri req username))
+              (resp/redirect (util/context-uri req username))
               user))
           (assoc (resp/redirect (str (:context req) "/")) :flash "passwords don't match!")))
   (GET "/logout" req
@@ -96,8 +96,8 @@
                                  (content/body
                                    (content/github-link req)
                                    [:h2 (str "Hello, new user " user "!")]
-                                   [:p "Return to the " (e/link-to (misc/context-uri req "") "example")
-                                 ", or " (e/link-to (misc/context-uri req "logout") "log out") "."]))
+                                   [:p "Return to the " (e/link-to (util/context-uri req "") "example")
+                                 ", or " (e/link-to (util/context-uri req "logout") "log out") "."]))
              (resp/redirect (str (:context req) "/")))))))
 
 (def page (handler/site

@@ -2,8 +2,8 @@
       :doc "Authenticating via GitHub using OAuth2 [EXPERIMENTAL]."}
   cemerick.friend.demo.oauth-github
   (:require [cemerick.friend.demo [content :as content]
-                                  [misc :as misc]
-                                  [users :as users :refer [users]]]
+                                  [users :as users :refer [users]]
+                                  [util :as util]]
             [cemerick.friend :as friend]
             [cemerick.friend [workflows :as workflows]
                              [credentials :as creds]]
@@ -65,12 +65,12 @@
             "If you're not authenticated, you will be redirected to a dedicated login page. "
             "If you're already authenticated, but do not meet the authorization requirements "
             "(e.g. you don't have the proper role), then you'll get an Unauthorized HTTP response."]
-        [:ul [:li (e/link-to (misc/context-uri req "role-user") "Requires the `user` role")]
-         ;[:li (e/link-to (misc/context-uri req "role-admin") "Requires the `admin` role")]
-         [:li (e/link-to (misc/context-uri req "requires-authentication")
+        [:ul [:li (e/link-to (util/context-uri req "role-user") "Requires the `user` role")]
+         ;[:li (e/link-to (util/context-uri req "role-admin") "Requires the `admin` role")]
+         [:li (e/link-to (util/context-uri req "requires-authentication")
                 "Requires any authentication, no specific role requirement")]]
         [:h3 "Logging out"]
-        [:p (e/link-to (misc/context-uri req "logout") "Click here to log out") "."])))
+        [:p (e/link-to (util/context-uri req "logout") "Click here to log out") "."])))
   (GET "/logout" req
     (friend/logout* (resp/redirect (str (:context req) "/"))))
   (GET (str "/" callback-path-segment) req

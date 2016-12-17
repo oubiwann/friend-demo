@@ -2,7 +2,7 @@
       :doc "Using OpenID to authenticate with various services."}
   cemerick.friend.demo.openid
   (:require [cemerick.friend.demo [content :as content]
-                                  [misc :as misc]]
+                                  [util :as util]]
             [cemerick.friend :as friend]
             [cemerick.friend.openid :as openid]
             [compojure.core :refer (GET defroutes)]
@@ -33,20 +33,20 @@
           [:div
            [:h3 "Login with…"]
            (for [{:keys [name url]} providers
-                 :let [base-login-url (misc/context-uri req (str "/login?identifier=" url))
+                 :let [base-login-url (util/context-uri req (str "/login?identifier=" url))
                        dom-id (str (gensym))]]
-             [:form {:method "POST" :action (misc/context-uri req "login")
+             [:form {:method "POST" :action (util/context-uri req "login")
                      :onsubmit (when (.contains ^String url "username")
                                  (format "var input = document.getElementById(%s); input.value = input.value.replace('username', prompt('What is your %s username?')); return true;"
                                    (str \' dom-id \') name))}
                [:input {:type "hidden" :name "identifier" :value url :id dom-id}]
                [:input {:type "submit" :class "button" :value name}]])
            [:p "…or, with a user-provided OpenID URL:"]
-           [:form {:method "POST" :action (misc/context-uri req "login")}
+           [:form {:method "POST" :action (util/context-uri req "login")}
             [:input {:type "text" :name "identifier" :style "width:250px;"}]
             [:input {:type "submit" :class "button" :value "Login"}]]])
         [:h3 "Logging out"]
-        [:p [:a {:href (misc/context-uri req "logout")} "Click here to log out"] "."])))
+        [:p [:a {:href (util/context-uri req "logout")} "Click here to log out"] "."])))
   (GET "/logout" req
     (friend/logout* (resp/redirect (str (:context req) "/")))))
 

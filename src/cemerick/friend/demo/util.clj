@@ -1,4 +1,4 @@
-(ns cemerick.friend.demo.misc
+(ns cemerick.friend.demo.util
   (:require [clojure.string :as str])
   (:import java.net.URI))
 

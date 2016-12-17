@@ -1,6 +1,6 @@
 (ns cemerick.friend.demo.content
   (:require [clojure.string :as str]
-            [cemerick.friend.demo.misc :as misc]))
+            [cemerick.friend.demo.util :as util]))
 
 (defn body
   [& content]
@@ -17,7 +17,7 @@
 (defn github-link
   [req]
   [:div {:style "float:right; width:50%; margin-top:1em; text-align:right"}
-   [:a {:class "button" :href (misc/github-url-for (-> req :demo :ns-name))}
+   [:a {:class "button" :href (util/github-url-for (-> req :demo :ns-name))}
        "View source"]
    " | "
    [:a {:class "button secondary" :href "/"} "All demos"]])

@@ -3,8 +3,7 @@
   cemerick.friend.demo.multi-factor
   (:require [cemerick.friend.demo [content :as content]
                                   [users :refer [users]]
-                                  [misc :as misc :refer [
-                                    context-uri request-url]]]
+                                  [util :as util]]
             [cemerick.friend :as friend]
             [cemerick.friend.workflows :refer [make-auth]]
             [cemerick.friend.credentials :as creds]
@@ -52,7 +51,7 @@
           resp/response
           (assoc :session session)
           (update-in [:session] assoc :user-record user-record))
-        (resp/redirect (context-uri request "login"))))
+        (resp/redirect (util/context-uri request "login"))))
     (POST "/finish" {{:keys [password pin]} :params
                      {:keys [user-record]} :session
                      :as request}
@@ -84,11 +83,11 @@
       (content/body
        (content/github-link req)
        [:h2 (-> req :demo :name)]
-       [:p "Clicking " (e/link-to (context-uri req "requires-authentication")
+       [:p "Clicking " (e/link-to (util/context-uri req "requires-authentication")
                          "this link")
            " will start a multi-factor authentication process, simluating one "
            "where a random PIN is sent to you via SMS.  (The PIN for this demo "
            "is always `1234`)."]
        [:h3 "Logging out"]
-       [:p (e/link-to (misc/context-uri req "logout") "Click here to log out") "."]))))
+       [:p (e/link-to (util/context-uri req "logout") "Click here to log out") "."]))))
 

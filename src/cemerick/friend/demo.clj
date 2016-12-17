@@ -1,6 +1,6 @@
 (ns cemerick.friend.demo
-  (:require [cemerick.friend.demo [misc :as misc]
-                                  [content :as content]]
+  (:require [cemerick.friend.demo [content :as content]
+                                  [util :as util]]
             [compojure handler [route :as route]]
             [compojure.core :as compojure :refer [GET defroutes]]
             [hiccup.core :as h]
@@ -16,11 +16,11 @@
    :ns-name (ns-name ns)
    :name (-> ns meta :name)
    :doc (-> ns meta :doc)
-   :route-prefix (misc/ns->context ns)
+   :route-prefix (util/ns->context ns)
    :app (ns-resolve ns 'app)
    :page (ns-resolve ns 'page)})
 
-(def the-menagerie (->> (b/namespaces-on-classpath :prefix misc/ns-prefix)
+(def the-menagerie (->> (b/namespaces-on-classpath :prefix util/ns-prefix)
                      distinct
                      (map #(do (require %) (the-ns %)))
                      (map demo-vars)

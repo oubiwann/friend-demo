@@ -14,14 +14,10 @@
             [hiccup.element :as e]))
 
 (def login-form
-  [:div {:class "row"}
-   [:div {:class "columns small-12"}
-    [:h3 "Login"]
-    [:div {:class "row"}
-     [:form {:method "POST" :action "login" :class "columns small-4"}
-      [:div "Username" [:input {:type "text" :name "username"}]]
-      [:div "Password" [:input {:type "password" :name "password"}]]
-      [:div [:input {:type "submit" :class "button" :value "Login"}]]]]]])
+   [:form {:method "POST" :action "login" :class "columns small-4"}
+    [:div "Username" [:input {:type "text" :name "username"}]]
+    [:div "Password" [:input {:type "password" :name "password"}]]
+    [:div [:input {:type "submit" :class "button" :value "Login"}]]])
 
 (compojure/defroutes routes
   (GET "/" req
@@ -66,7 +62,7 @@
                :login-uri "/login"
                :default-landing-uri "/"
                :unauthorized-handler #(-> (h/html5 [:h2 "You do not have sufficient privileges to access " (:uri %)])
-                                        resp/response
-                                        (resp/status 401))
+                                          resp/response
+                                          (resp/status 401))
                :credential-fn #(creds/bcrypt-credential-fn @users %)
                :workflows [(workflows/interactive-form)]})))

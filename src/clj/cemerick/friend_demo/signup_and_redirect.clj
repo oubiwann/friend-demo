@@ -23,29 +23,23 @@
 
 (defn- signup-form
   [flash]
-  [:div {:class "row"}
-   [:div {:class "columns small-12"}
-    [:h3 "Sign up "
-     [:small "(Any user/pass combination will do, as you are creating a new account or profile.)"]]
-    [:div {:class "row"}
-     [:form {:method "POST" :action "signup" :class "columns small-4"}
-      [:div "Username" [:input {:type "text" :name "username" :required "required"}]]
-      [:div "Password" [:input {:type "password" :name "password" :required "required"}]]
-      [:div "Confirm" [:input {:type "password" :name "confirm" :required "required"}]]
-      [:div "Make you an admin? " [:input {:type "checkbox" :name "admin"}]]
-      [:div
-       [:input {:type "submit" :class "button" :value "Sign up"}]
-       [:span {:style "padding:0 0 0 10px;color:red;"} flash]]]]]])
+  [:h3 "Sign up "
+   [:small "(Any user/pass combination will do, as you are creating a new account or profile.)"]]
+  [:form {:method "POST" :action "signup" :class "columns small-4"}
+   [:div "Username" [:input {:type "text" :name "username" :required "required"}]]
+   [:div "Password" [:input {:type "password" :name "password" :required "required"}]]
+   [:div "Confirm" [:input {:type "password" :name "confirm" :required "required"}]]
+   [:div "Make you an admin? " [:input {:type "checkbox" :name "admin"}]]
+   [:div
+    [:input {:type "submit" :class "button" :value "Sign up"}]
+    [:span {:style "padding:0 0 0 10px;color:red;"} flash]]])
 
 (def login-form
-  [:div {:class "row"}
-   [:div {:class "columns small-12"}
-    [:h3 "Login"]
-    [:div {:class "row"}
-     [:form {:method "POST" :action "login" :class "columns small-4"}
-      [:div "Username" [:input {:type "text" :name "username"}]]
-      [:div "Password" [:input {:type "password" :name "password"}]]
-      [:div [:input {:type "submit" :class "button" :value "Login"}]]]]]])
+  [[:h3 "Login"]
+    [:form {:method "POST" :action "login" :class "columns small-4"}
+     [:div "Username" [:input {:type "text" :name "username"}]]
+     [:div "Password" [:input {:type "password" :name "password"}]]
+     [:div [:input {:type "submit" :class "button" :value "Login"}]]]])
 
 (compojure/defroutes routes
   (GET "/" req
@@ -93,15 +87,15 @@
     (friend/authorize #{::users/admin} "You're an admin!"))
   (GET "/:user" req
        (friend/authenticated
-	       (let [user (:user (req :params))]
+               (let [user (:user (req :params))]
            (if (= user (:username (friend/current-authentication)))
-			       (h/html5
-			         misc/pretty-head
-			         (misc/pretty-body
-			           (misc/github-link req)
-			           [:h2 (str "Hello, new user " user "!")]
-			           [:p "Return to the " (e/link-to (misc/context-uri req "") "example") 
-		                 ", or " (e/link-to (misc/context-uri req "logout") "log out") "."]))
+                               (h/html5
+                                 misc/pretty-head
+                                 (misc/pretty-body
+                                   (misc/github-link req)
+                                   [:h2 (str "Hello, new user " user "!")]
+                                   [:p "Return to the " (e/link-to (misc/context-uri req "") "example")
+                                 ", or " (e/link-to (misc/context-uri req "logout") "log out") "."]))
              (resp/redirect (str (:context req) "/")))))))
 
 (def page (handler/site

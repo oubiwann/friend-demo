@@ -10,6 +10,7 @@
                  [com.cemerick/friend "0.2.3"]
                  [compojure "1.6.0-beta2"]
                  [clj-http "3.4.1"]
+                 [ring-webjars "0.1.1"]
                  [clojusc/twig "0.3.1-SNAPSHOT"]
                  [com.cemerick/url "0.1.1"]
                  ;; only used for the oauth-related demos
@@ -19,7 +20,8 @@
                  ;; only used to discover demo app namespaces
                  [bultitude "0.2.8"]
                  ;; only used for foundation js/css
-                 [org.webjars/foundation "6.2.3"]]
+                 [org.webjars/foundation "6.2.3"]
+                 [org.webjars/bootswatch-superhero "3.3.5+4"]]
   ;; the final clean keeps AOT garbage out of the REPL's way, and keeps
   ;; the namespace metadata available at runtime
   :aliases  {"sanity-check" ["do" "clean," "compile" ":all," "clean"]}

@@ -4,8 +4,9 @@
   (:require [cemerick.friend-demo.misc :as misc]
             [cemerick.friend-demo.users :as users :refer (users)]
             [cemerick.friend :as friend]
-            (cemerick.friend [workflows :as workflows]
-                             [credentials :as creds])
+            [cemerick.friend [workflows :as workflows]
+                             [credentials :as creds]]
+            [cemerick.url :as url]
             [friend-oauth2.workflow :as oauth2]
             [friend-oauth2.util :as oauth2-util]
             [clj-http.client :as http]
@@ -17,6 +18,12 @@
             [ring.util.codec :as codec]
             [hiccup.page :as h]
             [hiccup.element :as e]))
+
+(def client-id (System/getenv "OAUTH2_CLIENT_ID"))
+(def client-secret (System/getenv "OAUTH2_CLIENT_SECRET"))
+(def callback-domain (System/getenv "OAUTH2_CALLBACK_DOMAIN"))
+(def callback-path-segment "callback")
+(def full-callback-path (str "/oauth-github/" callback-path-segment))
 
 (defn- call-github
   [endpoint access-token]
@@ -44,7 +51,7 @@
         (if-let [identity (friend/identity req)]
           [:p "Logged in as GitHub user " [:strong (get-github-handle (:current identity))]
            " with GitHub OAuth2 access token " (:current identity)]
-          [:h3 [:a {:href "github.callback"} "Login with GitHub"]])
+          [:h3 [:a {:href (:path callback-path-segment)} "Login with GitHub"]])
 
         (when-let [{access-token :access_token} (friend/current-authentication req)]
           [:div
@@ -65,6 +72,8 @@
         [:p (e/link-to (misc/context-uri req "logout") "Click here to log out") "."])))
   (GET "/logout" req
     (friend/logout* (resp/redirect (str (:context req) "/"))))
+  (GET (str "/" callback-path-segment) req
+    (resp/redirect (str (:context req) "/")))
   (GET "/requires-authentication" req
     (friend/authenticated "Thanks for authenticating!"))
   (GET "/role-user" req
@@ -73,10 +82,11 @@
     (friend/authorize #{::users/admin} "You're an admin!")))
 
 (def client-config
-  {:client-id (System/getenv "github_client_id")
-   :client-secret (System/getenv "github_client_secret")
+  {:client-id client-id
+   :client-secret client-secret
    ;; TODO get friend-oauth2 to support :context, :path-info
-   :callback {:domain (System/getenv "github_client_domain") :path "/oauth-github/github.callback"}})
+   :callback {:domain callback-domain
+              :path full-callback-path}})
 
 (def uri-config
   {:authentication-uri {:url "https://github.com/login/oauth/authorize"
@@ -97,7 +107,7 @@
               routes
               {:allow-anon? true
                :default-landing-uri "/"
-               :login-uri "/github.callback"
+               :login-uri (str "/" callback-path-segment)
                :unauthorized-handler #(-> (h/html5 [:h2 "You do not have sufficient privileges to access " (:uri %)])
                                         resp/response
                                         (resp/status 401))

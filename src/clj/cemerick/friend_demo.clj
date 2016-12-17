@@ -1,10 +1,11 @@
 (ns cemerick.friend-demo
   (:require [cemerick.friend-demo.misc :as misc]
-            (compojure handler [route :as route])
-            [compojure.core :as compojure :refer (GET defroutes)]
+            [compojure handler [route :as route]]
+            [compojure.core :as compojure :refer [GET defroutes]]
             [hiccup.core :as h]
             [hiccup.element :as e]
-            [ring.middleware.resource :refer (wrap-resource)]
+            [ring.middleware.resource :refer [wrap-resource]]
+            [ring.middleware.webjars :refer [wrap-webjars]]
             ring.adapter.jetty
             [bultitude.core :as b]))
 
@@ -28,7 +29,7 @@
 (defroutes landing
   (GET "/" req (h/html [:html
                         misc/pretty-head
-                        (misc/pretty-body 
+                        (misc/pretty-body
                          [:h1 {:style "margin-bottom:0px"}
                           [:a {:href "http://github.com/cemerick/friend-demo"} "Among Friends"]]
                          [:p {:style "margin-top:0px"} "…a collection of demonstration apps using "
@@ -42,7 +43,7 @@ to bit-rot in a markdown file or somesuch. So, what better than a bunch of live
 demos of each authentication workflow that Friend supports (or is available via
 another library that builds on top of Friend), with smatterings of
 authorization examples here and there, all with links to the
-generally-less-than-10-lines of code that makes it happen?  
+generally-less-than-10-lines of code that makes it happen?
 
 Check out the demos, find the one(s) that apply to your situation, and
 click the button on the right to go straight to the source for that demo:"]
@@ -61,14 +62,18 @@ recognize two different username/password combinations:"]
 
 (defn- wrap-app-metadata
   [h app-metadata]
-  (fn [req] (h (assoc req :demo app-metadata))))
+  (fn [req]
+    (h (assoc req :demo app-metadata))))
 
-(def site (apply compojure/routes
-            landing
-            (route/resources "/" {:root "META-INF/resources/webjars/foundation/4.0.4/"})
-            (for [{:keys [app page route-prefix] :as metadata} the-menagerie]
-              (compojure/context route-prefix []
-                (wrap-app-metadata (compojure/routes (or page (fn [_])) (or app (fn [_]))) metadata)))))
+(def site
+  (apply compojure/routes
+    (wrap-webjars landing)
+    (for [{:keys [app page route-prefix] :as metadata} the-menagerie]
+         (compojure/context route-prefix []
+         (wrap-webjars
+           (wrap-app-metadata
+             (compojure/routes (or page (fn [_]))
+                               (or app (fn [_]))) metadata))))))
 
 (defn run
   []
@@ -77,7 +82,7 @@ recognize two different username/password combinations:"]
   server)
 
 (defn -main
-  "For heroku."
+  "For Heroku."
   [& [port]]
   (if port
     (ring.adapter.jetty/run-jetty #'site {:port (Integer. port)})

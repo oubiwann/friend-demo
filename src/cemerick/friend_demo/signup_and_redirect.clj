@@ -23,8 +23,8 @@
 
 (defn- signup-form
   [flash]
-  [:h3 "Sign up "
-   [:small "(Any user/pass combination will do, as you are creating a new account or profile.)"]]
+  [:h3 "Sign up"]
+  [:em "Any user/pass combination will do, as you are creating a new account or profile."]
   [:form {:method "POST" :action "signup" :class "columns small-4"}
    [:div "Username" [:input {:type "text" :name "username" :required "required"}]]
    [:div "Password" [:input {:type "password" :name "password" :required "required"}]]

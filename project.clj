@@ -18,8 +18,6 @@
                  [hiccup "1.0.5"]
                  ;; only used to discover demo app namespaces
                  [bultitude "0.2.8"]
-                 ;; only used for foundation js/css
-                 [org.webjars/foundation "6.2.3"]
                  [org.webjars/bootswatch-superhero "3.3.5+4"]]
   ;; the final clean keeps AOT garbage out of the REPL's way, and keeps
   ;; the namespace metadata available at runtime

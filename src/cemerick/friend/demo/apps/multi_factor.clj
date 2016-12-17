@@ -1,6 +1,6 @@
 (ns ^{:name "Multi-factor auth"
       :doc "Use multi-factor authentication in a Ring app."}
-  cemerick.friend.demo.multi-factor
+  cemerick.friend.demo.apps.multi-factor
   (:require [cemerick.friend.demo [content :as content]
                                   [users :refer [users]]
                                   [util :as util]]

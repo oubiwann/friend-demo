@@ -1,6 +1,6 @@
 (ns ^{:name "GitHub using OAuth2"
       :doc "Authenticating via GitHub using OAuth2 [EXPERIMENTAL]."}
-  cemerick.friend.demo.oauth-github
+  cemerick.friend.demo.apps.oauth-github
   (:require [cemerick.friend.demo [content :as content]
                                   [users :as users :refer [users]]
                                   [util :as util]]

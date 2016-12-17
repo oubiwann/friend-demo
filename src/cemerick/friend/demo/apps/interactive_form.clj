@@ -1,7 +1,7 @@
 (ns ^{:name "Interactive form"
       :doc "Typical username/password authentication + logout + a pinch of
            authorization functionality."}
-  cemerick.friend.demo.interactive-form
+  cemerick.friend.demo.apps.interactive-form
   (:require [cemerick.friend.demo [content :as content]
                                   [users :as users :refer [users]]
                                   [util :as util]]

@@ -1,6 +1,6 @@
 (ns ^{:name "#{Yahoo, AOL, Wordpress, Ubuntu} via OpenID"
       :doc "Using OpenID to authenticate with various services."}
-  cemerick.friend.demo.openid
+  cemerick.friend.demo.apps.openid
   (:require [cemerick.friend.demo [content :as content]
                                   [util :as util]]
             [cemerick.friend :as friend]

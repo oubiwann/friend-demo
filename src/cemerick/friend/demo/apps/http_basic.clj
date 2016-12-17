@@ -1,6 +1,6 @@
 (ns ^{:name "HTTP Basic"
       :doc "Use HTTP Basic to authenticate to a Ring app."}
-  cemerick.friend.demo.http-basic
+  cemerick.friend.demo.apps.http-basic
   (:require [cemerick.friend.demo [content :as content]
                                   [users :refer [users]]
                                   [util :as util]]

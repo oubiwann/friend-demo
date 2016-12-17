@@ -1,7 +1,8 @@
 (ns ^{:name "#{Yahoo, AOL, Wordpress, Ubuntu} via OpenID"
       :doc "Using OpenID to authenticate with various services."}
   cemerick.friend.demo.openid
-  (:require [cemerick.friend.demo.misc :as misc]
+  (:require [cemerick.friend.demo [content :as content]
+                                  [misc :as misc]]
             [cemerick.friend :as friend]
             [cemerick.friend.openid :as openid]
             [compojure.core :refer (GET defroutes)]
@@ -17,9 +18,9 @@
 (defroutes routes
   (GET "/" req
     (h/html5
-      misc/pretty-head
-      (misc/pretty-body
-        (misc/github-link req)
+      content/head
+      (content/body
+        (content/github-link req)
         [:h2 "Authenticating with various services using OpenID"]
         [:h3 "Current Status " [:small "(this will change when you log in/out)"]]
         (if-let [auth (friend/current-authentication req)]

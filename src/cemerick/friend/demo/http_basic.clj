@@ -1,9 +1,10 @@
 (ns ^{:name "HTTP Basic"
-      :doc "Using HTTP Basic to authenticate to a Ring app"}
+      :doc "Use HTTP Basic to authenticate to a Ring app."}
   cemerick.friend.demo.http-basic
-  (:require [cemerick.friend.demo [users :refer [users]]
+  (:require [cemerick.friend.demo [content :as content]
+                                  [users :refer [users]]
                                   [misc :as misc :refer [
-                                    context-uri request-url github-link]]]
+                                    context-uri request-url]]]
             [cemerick.friend :as friend]
             [cemerick.friend [workflows :as workflows]
                              [credentials :as creds]]
@@ -32,13 +33,13 @@
 (defn http-basic-page
   [req footer]
   (h/html5
-    misc/pretty-head
-    (misc/pretty-body
-     (github-link req)
+    content/head
+    (content/body
+     (content/github-link req)
      [:h2 (-> req :demo :name)]
      [:p "Attempting to access " (e/link-to {:id "interactive_url"}
-                                (context-uri req "requires-authentication")
-                                "this link")
+                                 (context-uri req "requires-authentication")
+                                 "this link")
          " will issue a challenge for your user-agent (browser) to provide HTTP Basic credentials. "
          "Once authenticated, all the authorization options available in Friend are available to restrict the permissions of particular users."]
      [:p "Please note that Chrome (and maybe other browsers) silently save HTTP Basic credentials for the duration of the session (and resend them automatically!), so "

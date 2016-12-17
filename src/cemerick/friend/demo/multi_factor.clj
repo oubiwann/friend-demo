@@ -1,15 +1,15 @@
 (ns ^{:name "Multi-factor auth"
-      :doc "Multi-factor Ring app authentication"}
+      :doc "Use multi-factor authentication in a Ring app."}
   cemerick.friend.demo.multi-factor
-  (:require [cemerick.friend.demo [users :refer [users]]
+  (:require [cemerick.friend.demo [content :as content]
+                                  [users :refer [users]]
                                   [misc :as misc :refer [
-                                    context-uri request-url github-link]]]
+                                    context-uri request-url]]]
             [cemerick.friend :as friend]
-            [cemerick.friend.workflows :refer (make-auth)]
+            [cemerick.friend.workflows :refer [make-auth]]
             [cemerick.friend.credentials :as creds]
-
-            [compojure.core :refer (GET POST routes defroutes)]
-            [compojure.handler :refer (site)]
+            [compojure.core :refer [GET POST routes defroutes]]
+            [compojure.handler :refer [site]]
             [ring.util.response :as resp]
             [hiccup.page :as h]
             [hiccup.element :as e]))
@@ -17,8 +17,8 @@
 (defn- login-page
   []
   (h/html5
-    misc/pretty-head
-    (misc/pretty-body
+    content/head
+    (content/body
      [:form {:action "start" :method "POST" :class "columns small-4"}
       "Username: "
       [:input {:type "text" :name "username"}]
@@ -27,8 +27,8 @@
 (defn- pin-page
   [identity invalid-login?]
   (h/html5
-    misc/pretty-head
-    (misc/pretty-body
+    content/head
+    (content/body
      (when invalid-login?
        [:p {:style "color:red"} "Sorry, that's not correct!"])
      [:p "Hello, " (:username identity) "; it looks like you're a "
@@ -80,9 +80,9 @@
 (defroutes page
   (GET "/" req
     (h/html5
-      misc/pretty-head
-      (misc/pretty-body
-       (github-link req)
+      content/head
+      (content/body
+       (content/github-link req)
        [:h2 (-> req :demo :name)]
        [:p "Clicking " (e/link-to (context-uri req "requires-authentication")
                          "this link")

@@ -1,7 +1,8 @@
 (ns ^{:name "GitHub using OAuth2"
-      :doc "Authenticating via GitHub using OAuth2 [EXPERIMENTAL]"}
+      :doc "Authenticating via GitHub using OAuth2 [EXPERIMENTAL]."}
   cemerick.friend.demo.oauth-github
-  (:require [cemerick.friend.demo [misc :as misc]
+  (:require [cemerick.friend.demo [content :as content]
+                                  [misc :as misc]
                                   [users :as users :refer [users]]]
             [cemerick.friend :as friend]
             [cemerick.friend [workflows :as workflows]
@@ -43,9 +44,9 @@
 (compojure/defroutes routes
   (GET "/" req
     (h/html5
-      misc/pretty-head
-      (misc/pretty-body
-        (misc/github-link req)
+      content/head
+      (content/body
+        (content/github-link req)
         [:h2 "Authenticating via GitHub using OAuth2 [EXPERIMENTAL]"]
         [:h3 "Current Status " [:small "(this will change when you log in/out)"]]
         (if-let [identity (friend/identity req)]
@@ -109,8 +110,8 @@
                :default-landing-uri "/"
                :login-uri (str "/" callback-path-segment)
                :unauthorized-handler #(-> (h/html5 [:h2 "You do not have sufficient privileges to access " (:uri %)])
-                                        resp/response
-                                        (resp/status 401))
+                                          resp/response
+                                          (resp/status 401))
                :workflows [(oauth2/workflow
                              {:client-config client-config
                               :uri-config uri-config

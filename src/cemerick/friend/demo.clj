@@ -1,5 +1,6 @@
 (ns cemerick.friend.demo
-  (:require [cemerick.friend.demo.misc :as misc]
+  (:require [cemerick.friend.demo [misc :as misc]
+                                  [content :as content]]
             [compojure handler [route :as route]]
             [compojure.core :as compojure :refer [GET defroutes]]
             [hiccup.core :as h]
@@ -28,8 +29,8 @@
 
 (defroutes landing
   (GET "/" req (h/html [:html
-                        misc/pretty-head
-                        (misc/pretty-body
+                        content/head
+                        (content/body
                          [:h1 {:style "margin-bottom:0px"}
                           [:a {:href "http://github.com/cemerick/friend-demo"} "Among Friends"]]
                          [:p {:style "margin-top:0px"} "…a collection of demonstration apps using "

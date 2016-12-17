@@ -1,7 +1,9 @@
 (ns ^{:name "Sign-up and redirect"
-      :doc "Form-based all-in-one sign-up and redirect to authenticated space."}
+      :doc "Form-based all-in-one sign-up and redirect to authenticated
+           space."}
   cemerick.friend.demo.signup-and-redirect
-  (:require [cemerick.friend.demo [misc :as misc]
+  (:require [cemerick.friend.demo [content :as content]
+                                  [misc :as misc]
                                   [users :as users :refer [users]]]
             [cemerick.friend :as friend]
             (cemerick.friend [workflows :as workflows]
@@ -44,9 +46,9 @@
 (compojure/defroutes routes
   (GET "/" req
     (h/html5
-      misc/pretty-head
-      (misc/pretty-body
-       (misc/github-link req)
+      content/head
+      (content/body
+       (content/github-link req)
        [:h2 "Sign up and authenticated redirect"]
        [:p "This app demonstrates form-based sign-up and redirect to an authenticated space."]
        [:h3 "Current Status " [:small "(this will change when you log in/out)"]]
@@ -67,7 +69,7 @@
        [:h3 "Logging out"]
        [:p (e/link-to (misc/context-uri req "logout") "Click here to log out") "."])))
   (GET "/login" req
-    (h/html5 misc/pretty-head (misc/pretty-body login-form)))
+    (h/html5 content/head (content/body login-form)))
   (POST "/signup" {{:keys [username password confirm] :as params} :params :as req}
         (if (and (not-any? str/blank? [username password confirm])
                  (= password confirm))
@@ -90,9 +92,9 @@
                (let [user (:user (req :params))]
            (if (= user (:username (friend/current-authentication)))
                                (h/html5
-                                 misc/pretty-head
-                                 (misc/pretty-body
-                                   (misc/github-link req)
+                                 content/head
+                                 (content/body
+                                   (content/github-link req)
                                    [:h2 (str "Hello, new user " user "!")]
                                    [:p "Return to the " (e/link-to (misc/context-uri req "") "example")
                                  ", or " (e/link-to (misc/context-uri req "logout") "log out") "."]))
@@ -105,7 +107,7 @@
                :login-uri "/login"
                :default-landing-uri "/"
                :unauthorized-handler #(-> (h/html5 [:h2 "You do not have sufficient privileges to access " (:uri %)])
-                                        resp/response
-                                        (resp/status 401))
+                                          resp/response
+                                          (resp/status 401))
                :credential-fn #(creds/bcrypt-credential-fn @users %)
                :workflows [(workflows/interactive-form)]})))

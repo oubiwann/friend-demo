@@ -13,13 +13,6 @@
            (.replace \- \_))
            ".clj"))
 
-(defn github-link
-  [req]
-  [:div {:style "float:right; width:50%; margin-top:1em; text-align:right"}
-   [:a {:class "button" :href (github-url-for (-> req :demo :ns-name))} "View source"]
-   " | "
-   [:a {:class "button secondary" :href "/"} "All demos"]])
-
 (defn resolve-uri
   [context uri]
   (let [context (if (instance? URI context) context (URI. context))]
@@ -46,15 +39,3 @@
 (defn ns->context
   [ns]
   (str "/" (-> ns ns-name name (subs (inc (count ns-prefix))))))
-
-(def pretty-head
-  [:head [:link {:href "assets/bootswatch-superhero/css/bootstrap.min.css"
-                 :rel "stylesheet"
-                 :type "text/css"}]])
-
-(defn pretty-body
-  [& content]
-  [:body
-   [:div {:class "container"}
-    [:div {:class "row"}
-    (into [:div {:class "columns small-12"}] content)]]])

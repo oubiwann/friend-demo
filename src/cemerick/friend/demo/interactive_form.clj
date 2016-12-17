@@ -1,7 +1,9 @@
 (ns ^{:name "Interactive form"
-      :doc "Typical username/password authentication + logout + a pinch of authorization functionality"}
+      :doc "Typical username/password authentication + logout + a pinch of
+           authorization functionality."}
   cemerick.friend.demo.interactive-form
-  (:require [cemerick.friend.demo [misc :as misc]
+  (:require [cemerick.friend.demo [content :as content]
+                                  [misc :as misc]
                                   [users :as users :refer [users]]]
             [cemerick.friend :as friend]
             (cemerick.friend [workflows :as workflows]
@@ -22,9 +24,9 @@
 (compojure/defroutes routes
   (GET "/" req
     (h/html5
-      misc/pretty-head
-      (misc/pretty-body
-       (misc/github-link req)
+      content/head
+      (content/body
+       (content/github-link req)
        [:h2 "Interactive form authentication"]
        [:p "This app demonstrates typical username/password authentication, and a pinch of Friend's authorization capabilities."]
        [:h3 "Current Status " [:small "(this will change when you log in/out)"]]
@@ -45,7 +47,7 @@
        [:h3 "Logging out"]
        [:p (e/link-to (misc/context-uri req "logout") "Click here to log out") "."])))
   (GET "/login" req
-    (h/html5 misc/pretty-head (misc/pretty-body login-form)))
+    (h/html5 content/head (content/body login-form)))
   (GET "/logout" req
     (friend/logout* (resp/redirect (str (:context req) "/"))))
   (GET "/requires-authentication" req

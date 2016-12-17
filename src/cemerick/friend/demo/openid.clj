@@ -1,7 +1,7 @@
 (ns ^{:name "#{Yahoo, AOL, Wordpress, Ubuntu} via OpenID"
       :doc "Using OpenID to authenticate with various services."}
-  cemerick.friend-demo.openid
-  (:require [cemerick.friend-demo.misc :as misc]
+  cemerick.friend.demo.openid
+  (:require [cemerick.friend.demo.misc :as misc]
             [cemerick.friend :as friend]
             [cemerick.friend.openid :as openid]
             [compojure.core :refer (GET defroutes)]

@@ -1,4 +1,4 @@
-(ns cemerick.friend-demo.misc
+(ns cemerick.friend.demo.misc
   (:require [clojure.string :as str])
   (:import java.net.URI))
 
@@ -42,7 +42,7 @@
     (str (name scheme) "://" server-name port uri
          (when query-string (str "?" query-string)))))
 
-(def ns-prefix "cemerick.friend-demo")
+(def ns-prefix "cemerick.friend.demo")
 (defn ns->context
   [ns]
   (str "/" (-> ns ns-name name (subs (inc (count ns-prefix))))))

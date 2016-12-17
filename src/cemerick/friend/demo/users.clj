@@ -1,4 +1,4 @@
-(ns cemerick.friend-demo.users
+(ns cemerick.friend.demo.users
   (:require [cemerick.friend.credentials :refer (hash-bcrypt)]))
 
 (def users (atom {"friend" {:username "friend"

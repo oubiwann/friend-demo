@@ -1,14 +1,14 @@
 (ns ^{:name "Interactive form"
       :doc "Typical username/password authentication + logout + a pinch of authorization functionality"}
-  cemerick.friend-demo.interactive-form
-  (:require [cemerick.friend-demo.misc :as misc]
-            [cemerick.friend-demo.users :as users :refer (users)]
+  cemerick.friend.demo.interactive-form
+  (:require [cemerick.friend.demo [misc :as misc]
+                                  [users :as users :refer [users]]]
             [cemerick.friend :as friend]
             (cemerick.friend [workflows :as workflows]
                              [credentials :as creds])
-            [compojure.core :as compojure :refer (GET POST ANY defroutes)]
-            (compojure [handler :as handler]
-                       [route :as route])
+            [compojure.core :as compojure :refer [GET POST ANY defroutes]]
+            [compojure [handler :as handler]
+                       [route :as route]]
             [ring.util.response :as resp]
             [hiccup.page :as h]
             [hiccup.element :as e]))

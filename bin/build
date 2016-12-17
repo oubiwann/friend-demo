@@ -1,5 +1,5 @@
 # running main just so all code is loaded before deployment
 # can't AOT because it elides namespace metadata, which we use to build the
 # parts of the site
-lein with-profile heroku run -m cemerick.friend-demo
+lein with-profile heroku run -m cemerick.friend.demo
 

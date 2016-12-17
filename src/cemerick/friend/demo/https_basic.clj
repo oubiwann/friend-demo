@@ -1,8 +1,8 @@
 (ns ^{:name "HTTP Basic requiring SSL"
       :doc "Same as 'HTTP Basic', but with the added condition that HTTPS/SSL is used (suitable for web service APIs)."}
-  cemerick.friend-demo.https-basic
+  cemerick.friend.demo.https-basic
   (:require [cemerick.friend :as friend]
-            [cemerick.friend-demo.http-basic :as basic]
+            [cemerick.friend.demo.http-basic :as basic]
             [compojure.core :refer (GET)]
             [compojure.handler :refer (site)]))
 

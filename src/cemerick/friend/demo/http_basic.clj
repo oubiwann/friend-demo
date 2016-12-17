@@ -1,12 +1,13 @@
 (ns ^{:name "HTTP Basic"
       :doc "Using HTTP Basic to authenticate to a Ring app"}
-  cemerick.friend-demo.http-basic
-  (:require [cemerick.friend-demo.users :refer (users)]
-            [cemerick.friend-demo.misc :as misc :refer (context-uri request-url github-link)]
+  cemerick.friend.demo.http-basic
+  (:require [cemerick.friend.demo [users :refer [users]]
+                                  [misc :as misc :refer [
+                                    context-uri request-url github-link]]]
             [cemerick.friend :as friend]
-            (cemerick.friend [workflows :as workflows]
-                             [credentials :as creds])
-            
+            [cemerick.friend [workflows :as workflows]
+                             [credentials :as creds]]
+
             [compojure.core :refer (GET defroutes)]
             [compojure.handler :refer (site)]
             [hiccup.page :as h]

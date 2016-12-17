@@ -1,8 +1,8 @@
 (ns ^{:name "Sign-up and redirect"
       :doc "Form-based all-in-one sign-up and redirect to authenticated space."}
-  cemerick.friend-demo.signup-and-redirect
-  (:require [cemerick.friend-demo.misc :as misc]
-            [cemerick.friend-demo.users :as users :refer (users)]
+  cemerick.friend.demo.signup-and-redirect
+  (:require [cemerick.friend.demo [misc :as misc]
+                                  [users :as users :refer [users]]]
             [cemerick.friend :as friend]
             (cemerick.friend [workflows :as workflows]
                              [credentials :as creds])

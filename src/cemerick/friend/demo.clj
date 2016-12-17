@@ -1,5 +1,5 @@
-(ns cemerick.friend-demo
-  (:require [cemerick.friend-demo.misc :as misc]
+(ns cemerick.friend.demo
+  (:require [cemerick.friend.demo.misc :as misc]
             [compojure handler [route :as route]]
             [compojure.core :as compojure :refer [GET defroutes]]
             [hiccup.core :as h]

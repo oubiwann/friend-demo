@@ -1,12 +1,13 @@
 (ns ^{:name "Multi-factor auth"
       :doc "Multi-factor Ring app authentication"}
-  cemerick.friend-demo.multi-factor
-  (:require [cemerick.friend-demo.users :refer (users)]
-            [cemerick.friend-demo.misc :as misc :refer (context-uri request-url github-link)]
+  cemerick.friend.demo.multi-factor
+  (:require [cemerick.friend.demo [users :refer [users]]
+                                  [misc :as misc :refer [
+                                    context-uri request-url github-link]]]
             [cemerick.friend :as friend]
             [cemerick.friend.workflows :refer (make-auth)]
             [cemerick.friend.credentials :as creds]
-            
+
             [compojure.core :refer (GET POST routes defroutes)]
             [compojure.handler :refer (site)]
             [ring.util.response :as resp]

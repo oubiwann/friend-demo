@@ -1,16 +1,14 @@
 (ns cemerick.friend.demo
-  (:require [cemerick.friend.demo [content :as content]
+  (:require [bultitude.core :as b]
+            [cemerick.friend.demo [content :as content]
                                   [util :as util]]
             [compojure handler [route :as route]]
             [compojure.core :as compojure :refer [GET defroutes]]
-            [hiccup.core :as h]
-            [hiccup.element :as e]
             [ring.middleware.resource :refer [wrap-resource]]
             [ring.middleware.webjars :refer [wrap-webjars]]
-            ring.adapter.jetty
-            [bultitude.core :as b]))
+            ring.adapter.jetty))
 
-(defn- demo-vars
+(defn demo-vars
   [ns]
   {:namespace ns
    :ns-name (ns-name ns)
@@ -20,44 +18,16 @@
    :app (ns-resolve ns 'app)
    :page (ns-resolve ns 'page)})
 
-(def the-menagerie (->> (b/namespaces-on-classpath :prefix util/ns-prefix)
-                     distinct
-                     (map #(do (require %) (the-ns %)))
-                     (map demo-vars)
-                     (filter #(or (:app %) (:page %)))
-                     (sort-by :ns-name)))
+(def the-menagerie
+  (->> (b/namespaces-on-classpath :prefix util/ns-prefix)
+       distinct
+       (map #(do (require %) (the-ns %)))
+       (map demo-vars)
+       (filter #(or (:app %) (:page %)))
+       (sort-by :ns-name)))
 
 (defroutes landing
-  (GET "/" req (h/html [:html
-                        content/head
-                        (content/body
-                         [:h1 {:style "margin-bottom:0px"}
-                          [:a {:href "http://github.com/cemerick/friend-demo"} "Among Friends"]]
-                         (content/jumbotron)
-                         [:p "Implementing authentication and authorization for your web apps is generally a
-necessary but not particularly pleasant task, even if you are using Clojure.
-Friend makes it relatively easy and relatively painless, but I thought the
-examples that the project's documentation demanded deserved a better forum than
-to bit-rot in a markdown file or somesuch. So, what better than a bunch of live
-demos of each authentication workflow that Friend supports (or is available via
-another library that builds on top of Friend), with smatterings of
-authorization examples here and there, all with links to the
-generally-less-than-10-lines of code that makes it happen?
-
-Check out the demos, find the one(s) that apply to your situation, and
-click the button on the right to go straight to the source for that demo:"]
-                         [:div {:class "columns small-8"}
-                          [:h2 "Demonstrations"]
-                          [:ol
-                           (for [{:keys [name doc route-prefix]} the-menagerie]
-                             [:li (e/link-to (str route-prefix "/") [:strong name])
-                              " — " doc])]]
-                         [:div {:class "columns small-4"}
-                          [:h2 "Credentials"]
-                          [:p "All demo applications here that directly require user-provided credentials
-recognize two different username/password combinations:"]
-                          [:ul [:li [:code "friend/clojure"] " — associated with a \"user\" role"]
-                               [:li [:code "friend-admin/clojure"] " — associated with an \"admin\" role"]]])])))
+  (GET "/" req (content/landing-page the-menagerie)))
 
 (defn- wrap-app-metadata
   [h app-metadata]

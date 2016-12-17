@@ -33,9 +33,7 @@
                         (content/body
                          [:h1 {:style "margin-bottom:0px"}
                           [:a {:href "http://github.com/cemerick/friend-demo"} "Among Friends"]]
-                         [:p {:style "margin-top:0px"} "…a collection of demonstration apps using "
-                          (e/link-to "http://github.com/cemerick/friend" "Friend")
-                          ", an authentication and authorization library for securing Clojure web services and applications."]
+                         (content/jumbotron)
                          [:p "Implementing authentication and authorization for your web apps is generally a
 necessary but not particularly pleasant task, even if you are using Clojure.
 Friend makes it relatively easy and relatively painless, but I thought the

@@ -1,6 +1,16 @@
 (ns cemerick.friend.demo.content
-  (:require [clojure.string :as str]
-            [cemerick.friend.demo.util :as util]))
+  (:require [cemerick.friend.demo.util :as util]
+            [clojure.string :as str]
+            [hiccup.element :as element]))
+
+(defn jumbotron
+  [& content]
+  [:div {:class "jumbotron"}
+   [:h1 "cemerick.friend.demo"]
+   [:p "…a collection of demonstration apps using "
+       (element/link-to "http://github.com/cemerick/friend" "Friend")
+       ", an authentication and authorization library for securing Clojure web "
+       "services and applications."]])
 
 (defn body
   [& content]

@@ -42,18 +42,21 @@
        [:h1
         [:a {:href "http://github.com/cemerick/friend-demo"} "Among Friends"]]
        (jumbotron)
-       [:p "Implementing authentication and authorization for your web apps is
+       [:p {:class "lead"}
+           "Implementing authentication and authorization for your web apps is
            generally a necessary but not particularly pleasant task, even if
            you are using Clojure. Friend makes it relatively easy and
            relatively painless, but I thought the examples that the project's
            documentation demanded deserved a better forum than to bit-rot in a
-           markdown file or somesuch. So, what better than a bunch of live
+           markdown file or somesuch."]
+       [:p {:class "lead"}
+           "So, what better than a bunch of live
            demos of each authentication workflow that Friend supports (or is
            available via another library that builds on top of Friend), with
            smatterings of authorization examples here and there, all with links
            to the generally-less-than-10-lines of code that makes it happen?"]
-
-       [:p "Check out the demos, find the one(s) that apply to your situation,
+       [:p {:class "lead"}
+           "Check out the demos, find the one(s) that apply to your situation,
            and click the button on the right to go straight to the source for
            that demo:"]
        [:div {:class "columns small-8"}

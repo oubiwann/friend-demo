@@ -42,7 +42,8 @@
          (wrap-webjars
            (wrap-app-metadata
              (compojure/routes (or page (fn [_]))
-                               (or app (fn [_]))) metadata))))))
+                               (or app (fn [_])))
+             metadata))))))
 
 (defn run
   []

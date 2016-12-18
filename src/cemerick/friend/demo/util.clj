@@ -35,7 +35,7 @@
     (str (name scheme) "://" server-name port uri
          (when query-string (str "?" query-string)))))
 
-(def ns-prefix "cemerick.friend.demo")
+(def ns-prefix "cemerick.friend.demo.apps")
 
 (defn ns->context
   [ns]

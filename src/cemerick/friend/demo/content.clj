@@ -1,8 +1,10 @@
 (ns cemerick.friend.demo.content
-  (:require [cemerick.friend.demo.util :as util]
-            [clojure.string :as str]
-            [hiccup.core :as h]
-            [hiccup.element :as element]))
+  (:require [clojure.string :as str]
+            [cemerick.friend.demo.users :refer [users]]
+            [cemerick.friend.demo.util :as util]
+            [hiccup.core]
+            [hiccup.element :as element]
+            [hiccup.page]))
 
 (defn body
   [& content]
@@ -35,7 +37,7 @@
 
 (defn landing-page
   [apps]
-  (h/html
+  (hiccup.core/html
     [:html
       head
       (body
@@ -73,3 +75,46 @@
                   " — associated with a \"user\" role"]
              [:li [:code "friend-admin/clojure"]
                   " — associated with an \"admin\" role"]]])]))
+
+(defn http-basic-page
+  [req footer]
+  (hiccup.page/html5
+    head
+    (body
+     (github-link req)
+     [:h2 (-> req :demo :name)]
+     [:p {:class "lead"}
+         "Attempting to access "
+         (element/link-to {:id "interactive_url"}
+           (util/context-uri req "requires-authentication") "this link ")
+         "will issue a challenge for your user-agent (browser) to provide "
+         "HTTP Basic credentials. Once authenticated, all the authorization "
+         "options available in Friend are available to restrict the "
+         "permissions of particular users."]
+     [:p "Please note that Chrome (and maybe other browsers) silently save "
+         "HTTP Basic credentials for the duration of the session (and resend "
+         "them automatically!), so "
+         (element/link-to (util/context-uri req "/logout") "logging out")
+          " won't work as expected."]
+     [:p "You can access resources requiring HTTP Basic authentication trivially in "
+         "any HTTP client (like `curl`) with a URL such as:"]
+     [:p [:code "curl "
+         (str/replace (str (util/request-url req) "/requires-authentication")
+           #"://" #(str % (-> @users first val :username (str ":clojure@"))))]]
+     footer)))
+
+(defn http-basic-footer
+  [req]
+  [:p "You can combine this with Friend's \"channel security\" middleware to enforce the "
+      "use of SSL, making this a good recipe for controlling access to web service APIs."
+      " Head over to "
+      (element/link-to (util/context-uri req "/https-basic") "HTTPS Basic")
+      " for a demo."])
+
+(defn https-basic-footer
+  [req]
+  [:p "Note that because the handler that requires authentication is "
+      "further guarded by "
+      [:code "cemerick.friend/requires-scheme"]
+      ", all requests to it are redirected over HTTPS "
+      "(even before the HTTP Basic challenge is sent, if required)."])

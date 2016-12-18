@@ -4,6 +4,7 @@
   cemerick.friend.demo.apps.https-basic
   (:require [cemerick.friend :as friend]
             [cemerick.friend.demo.apps.http-basic :as basic]
+            [cemerick.friend.demo.content :as content]
             [compojure.core :refer [GET]]
             [compojure.handler :refer [site]]))
 
@@ -14,9 +15,8 @@
            (friend/requires-scheme-with-proxy :https)
            site))
 
-(def page (GET "/" req (basic/http-basic-page req
-                         [:p "Note that because the handler that requires authentication is "
-                          "further guarded by "
-                          [:code "cemerick.friend/requires-scheme"]
-                          ", all requests to it are redirected over HTTPS "
-                          "(even before the HTTP Basic challenge is sent, if required)."])))
+(def page
+  (GET "/" req
+    (content/http-basic-page
+      req
+      (content/https-basic-footer req))))

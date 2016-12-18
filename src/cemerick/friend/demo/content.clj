@@ -7,6 +7,8 @@
             [hiccup.element :as element]
             [hiccup.page]))
 
+;;; HTML Fraagments
+
 (defn body
   [& content]
   [:body
@@ -35,6 +37,187 @@
        "View source"]
    " | "
    [:a {:class "button secondary" :href "/"} "All demos"]])
+
+(defn http-basic-footer
+  [req]
+  [:p "You can combine this with Friend's \"channel security\" middleware to "
+      "enforce the use of SSL, making this a good recipe for controlling "
+      "access to web service APIs. Head over to "
+      (element/link-to (util/context-uri req "/https-basic") "HTTPS Basic")
+      " for a demo."])
+
+(defn https-basic-footer
+  [req]
+  [:p "Note that because the handler that requires authentication is further "
+      "guarded by "
+      [:code "cemerick.friend/requires-scheme"]
+      ", all requests to it are redirected over HTTPS (even before the HTTP "
+      "Basic challenge is sent, if required)."])
+
+(def email-input
+  [:div {:class "form-group"}
+   [:label {:for "inputEmail" :class "col-lg-2 control-label"}
+     "Email"]
+   [:div {:class "col-lg-10"}
+    [:input {:class "form-control" :id "inputEmail" :placeholder "Email"
+             :type "text" :name "username"}]]])
+
+(def password-input
+  [:div {:class "form-group"}
+   [:label {:for "inputPassword" :class "col-lg-2 control-label"}
+    "Password"]
+   [:div {:class "col-lg-10"}
+    [:input {:class "form-control" :id "inputPassword" :placeholder "Password"
+             :type "password" :name "password"}]]])
+
+(def pin-input
+  [:div {:class "form-group"}
+   [:label {:for "inputPIN" :class "col-lg-2 control-label"}
+    "PIN"]
+   [:div {:class "col-lg-10"}
+    [:input {:class "form-control" :id "inputPIN" :placeholder "PIN"
+             :type "text" :name "pin"}]]])
+
+(defn login-button
+  ([]
+    (login-button "Login"))
+  ([value]
+    [:div {:class "form-group"}
+     [:div {:class "col-lg-10 col-lg-offset-2"}
+      [:button {:type "submit" :class "btn btn-primary" :value value}
+        value]]]))
+
+(def login-form
+  [:form {:class "form-horizontal" :method "POST" :action "login"}
+   [:fieldset
+    [:legend "Login"]
+    email-input
+    password-input
+    (login-button)]])
+
+(defn logging-out-section
+  [req]
+  (hiccup.core/html
+    [:h3 "Logging out"]
+     [:p "Click below to log out."]
+     [:p [:a {:class "btn btn-primary"
+              :href (util/context-uri req "logout")}
+           "Logout"]]))
+
+(defn get-user-status
+  [req]
+  (hiccup.core/html
+    [:h3 "Current Status"]
+    [:h4 (if-let [identity (friend/identity req)]
+         [:div {:class "alert alert-success"}
+          (apply str "Logged in, with these roles: "
+            (-> identity
+                friend/current-authentication
+                :roles))]
+         [:div {:class "alert alert-warning"}
+           "Anonymous user"])]))
+
+(defn get-protected-links
+  [req]
+  (hiccup.core/html
+    [:h3 "Authorization demos"]
+    [:p "Each of these links require particular roles (or, any "
+        "authentication) to access. If you're not authenticated, you will be "
+        "redirected to a dedicated login page. If you're already "
+        "authenticated, but do not meet the authorization requirements (e.g. "
+        "you don't have the proper role), then you'll get an Unauthorized "
+        "HTTP response."]
+    [:ul
+     [:li (element/link-to
+            (util/context-uri req "role-user")
+            "Requires the `user` role")]
+     [:li (element/link-to
+            (util/context-uri req "role-admin")
+            "Requires the `admin` role")]
+     [:li (element/link-to
+            (util/context-uri req "requires-authentication")
+            "Requires any authentication, no specific role requirement")]]))
+
+(def multifactor-finish-form
+  [:form {:class "form-horizontal" :method "POST" :action "finish"}
+   [:fieldset
+    [:legend "Login"]
+    password-input
+    pin-input
+    (login-button "Verify PIN")]])
+
+;;; Sub-pages for apps
+
+(defn user-page
+  [req]
+  (hiccup.page/html5
+    head
+    (body
+     [:h2 (-> req :demo :name)]
+     [:p {:class "lead"} "You're a user!"])))
+
+(defn admin-page
+  [req]
+  (hiccup.page/html5
+    head
+    (body
+     [:h2 (-> req :demo :name)]
+     [:p {:class "lead"} "You're an admin!"])))
+
+(defn authed-page
+  [req]
+  (hiccup.page/html5
+    head
+    (body
+     [:h2 (-> req :demo :name)]
+     [:p {:class "lead"} "Thanks for authenticating!"])))
+
+(defn unauthed-page
+  [req uri]
+  (hiccup.page/html5
+    head
+    (body
+     [:h2 (-> req :demo :name)]
+     [:div {:class "alert alert-danger"}
+     [:p {:class "lead"}
+       "You do not have sufficient privileges to access "
+       uri]])))
+
+(defn multifactor-login-page
+  [req]
+  (hiccup.page/html5
+    head
+    (body
+    [:h2 (-> req :demo :name)]
+    [:form {:class "form-horizontal" :method "POST" :action "start"}
+     [:fieldset
+      [:legend "Login"]
+      email-input
+      (login-button)]])))
+
+(defn pin-page
+  [req identity invalid-login?]
+  (hiccup.page/html5
+    head
+    (body
+      [:h2 (-> req :demo :name)]
+      (when invalid-login?
+        [:div {:class "alert alert-danger"}
+         [:p {:class "lead"} "Sorry, that's not correct!"]])
+      [:div {:class "alert alert-success"}
+       [:p {:class "lead"}
+        "Hello, " (:username identity) "; it looks like you're a "
+        (-> identity :roles first name) "."]]
+      [:p {:class "lead"}
+        "We've sent you a PIN ("
+        [:em "not really; it's always `1234` in this demo,
+          but you could use something like Twilio to send a PIN"]
+        ")."]
+      [:p {:class "lead"}
+        "Please enter it and your password here:"]
+      multifactor-finish-form)))
+
+;;; Top-level and App Pages
 
 (defn landing-page
   [apps]
@@ -106,117 +289,40 @@
            #"://" #(str % (-> @users first val :username (str ":clojure@"))))]]
      footer)))
 
-(defn http-basic-footer
-  [req]
-  [:p "You can combine this with Friend's \"channel security\" middleware to "
-      "enforce the use of SSL, making this a good recipe for controlling "
-      "access to web service APIs. Head over to "
-      (element/link-to (util/context-uri req "/https-basic") "HTTPS Basic")
-      " for a demo."])
-
-(defn https-basic-footer
-  [req]
-  [:p "Note that because the handler that requires authentication is further "
-      "guarded by "
-      [:code "cemerick.friend/requires-scheme"]
-      ", all requests to it are redirected over HTTPS (even before the HTTP "
-      "Basic challenge is sent, if required)."])
-
-(def login-form
-  [:form {:class "form-horizontal" :method "POST" :action "login"}
-   [:fieldset
-    [:legend "Login"]
-    [:div {:class "form-group"}
-     [:label {:for "inputEmail" :class "col-lg-2 control-label"}
-       "Email"]
-     [:div {:class "col-lg-10"}
-      [:input {:class "form-control" :id "inputEmail" :placeholder "Email"
-               :type "text" :name "username"}]]]
-    [:div {:class "form-group"}
-     [:label {:for "inputPassword" :class "col-lg-2 control-label"}
-      "Password"]
-     [:div {:class "col-lg-10"}
-      [:input {:class "form-control" :id "inputPassword" :placeholder "Password"
-               :type "password" :name "password"}]]]
-    [:div {:class "form-group"}
-     [:div {:class "col-lg-10 col-lg-offset-2"}
-      [:button {:type "submit" :class "btn btn-primary" :value "Login"}
-        "Login"]]]]])
-
-(defn user-page
-  [req]
-  (hiccup.page/html5
-    head
-    (body
-     [:h2 (-> req :demo :name)]
-     [:p {:class "lead"} "You're a user!"])))
-
-(defn admin-page
-  [req]
-  (hiccup.page/html5
-    head
-    (body
-     [:h2 (-> req :demo :name)]
-     [:p {:class "lead"} "You're an admin!"])))
-
-(defn authed-page
-  [req]
-  (hiccup.page/html5
-    head
-    (body
-     [:h2 (-> req :demo :name)]
-     [:p {:class "lead"} "Thanks for authenticating!"])))
-
-(defn unauthed-page
-  [req uri]
-  (hiccup.page/html5
-    head
-    (body
-     [:h2 (-> req :demo :name)]
-     [:div {:class "alert alert-danger"}
-     [:p {:class "lead"}
-       "You do not have sufficient privileges to access "
-       uri]])))
-
 (defn interactive-form-page
   [req]
   (hiccup.page/html5
     head
     (body
      (github-link req)
-     [:h2 "Interactive form authentication"]
+     [:h2 (-> req :demo :name)]
      [:p {:class "lead"}
          "This app demonstrates typical username/password authentication, and "
          "a pinch of Friend's authorization capabilities."]
-     [:h3 "Current Status"]
-     [:h4 (if-let [identity (friend/identity req)]
-            [:div {:class "alert alert-success"}
-             (apply str "Logged in, with these roles: "
-               (-> identity
-                   friend/current-authentication
-                   :roles))]
-            [:div {:class "alert alert-warning"}
-              "Anonymous user"])]
+     (get-user-status req)
      login-form
-     [:h3 "Authorization demos"]
-     [:p "Each of these links require particular roles (or, any "
-         "authentication) to access. If you're not authenticated, you will be "
-         "redirected to a dedicated login page. If you're already "
-         "authenticated, but do not meet the authorization requirements (e.g. "
-         "you don't have the proper role), then you'll get an Unauthorized "
-         "HTTP response."]
-     [:ul
-      [:li (element/link-to
-             (util/context-uri req "role-user")
-             "Requires the `user` role")]
-      [:li (element/link-to
-             (util/context-uri req "role-admin")
-             "Requires the `admin` role")]
-      [:li (element/link-to
-             (util/context-uri req "requires-authentication")
-             "Requires any authentication, no specific role requirement")]]
-     [:h3 "Logging out"]
-     [:p "Click below to log out."]
-     [:p [:a {:class "btn btn-primary"
-              :href (util/context-uri req "logout")}
-       "Logout"]])))
+     (get-protected-links req)
+     (logging-out-section req))))
+
+(defn multifactor-page
+  [req]
+  (hiccup.page/html5
+    head
+    (body
+      (github-link req)
+      [:h2 (-> req :demo :name)]
+      [:p {:class "lead"}
+         "This app demonstrates a means of using multi-factor authentication, "
+         "and a pinch of Friend's authorization capabilities."]
+      (get-user-status req)
+      [:div {:class "alert alert-info"}
+       [:p {:class "lead"}
+         "Note: the PIN for this demo is always `1234`."]]
+      [:p {:class "lead"}
+        "Clicking "
+        (element/link-to
+          (util/context-uri req "requires-authentication") "this link") " "
+        "will start a multi-factor authentication process, simluating one "
+        "where a random PIN is sent to you via SMS."]
+      (get-protected-links req)
+      (logging-out-section req))))

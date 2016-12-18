@@ -12,59 +12,31 @@
             [compojure [handler :as handler]
                        [route :as route]]
             [ring.util.response :as resp]
-            [hiccup.page :as h]
-            [hiccup.element :as e]))
-
-(def login-form
-   [:form {:method "POST" :action "login" :class "columns small-4"}
-    [:div "Username" [:input {:type "text" :name "username"}]]
-    [:div "Password" [:input {:type "password" :name "password"}]]
-    [:div [:input {:type "submit" :class "button" :value "Login"}]]])
+            [hiccup.page :as h]))
 
 (compojure/defroutes routes
   (GET "/" req
-    (h/html5
-      content/head
-      (content/body
-       (content/github-link req)
-       [:h2 "Interactive form authentication"]
-       [:p "This app demonstrates typical username/password authentication, and a pinch of Friend's authorization capabilities."]
-       [:h3 "Current Status " [:small "(this will change when you log in/out)"]]
-       [:p (if-let [identity (friend/identity req)]
-             (apply str "Logged in, with these roles: "
-               (-> identity friend/current-authentication :roles))
-             "anonymous user")]
-       login-form
-       [:h3 "Authorization demos"]
-       [:p "Each of these links require particular roles (or, any authentication) to access. "
-           "If you're not authenticated, you will be redirected to a dedicated login page. "
-           "If you're already authenticated, but do not meet the authorization requirements "
-           "(e.g. you don't have the proper role), then you'll get an Unauthorized HTTP response."]
-       [:ul [:li (e/link-to (util/context-uri req "role-user") "Requires the `user` role")]
-        [:li (e/link-to (util/context-uri req "role-admin") "Requires the `admin` role")]
-        [:li (e/link-to (util/context-uri req "requires-authentication")
-               "Requires any authentication, no specific role requirement")]]
-       [:h3 "Logging out"]
-       [:p (e/link-to (util/context-uri req "logout") "Click here to log out") "."])))
+    (content/interactive-form-page req))
   (GET "/login" req
-    (h/html5 content/head (content/body login-form)))
+    (h/html5 content/head (content/body content/login-form)))
   (GET "/logout" req
     (friend/logout* (resp/redirect (str (:context req) "/"))))
   (GET "/requires-authentication" req
-    (friend/authenticated "Thanks for authenticating!"))
+    (friend/authenticated (content/authed-page req)))
   (GET "/role-user" req
-    (friend/authorize #{::users/user} "You're a user!"))
+    (friend/authorize #{::users/user} (content/user-page req)))
   (GET "/role-admin" req
-    (friend/authorize #{::users/admin} "You're an admin!")))
+    (friend/authorize #{::users/admin} (content/admin-page req))))
 
-(def page (handler/site
-            (friend/authenticate
-              routes
-              {:allow-anon? true
-               :login-uri "/login"
-               :default-landing-uri "/"
-               :unauthorized-handler #(-> (h/html5 [:h2 "You do not have sufficient privileges to access " (:uri %)])
-                                          resp/response
-                                          (resp/status 401))
-               :credential-fn #(creds/bcrypt-credential-fn @users %)
-               :workflows [(workflows/interactive-form)]})))
+(def page
+  (handler/site
+    (friend/authenticate
+      routes
+      {:allow-anon? true
+       :login-uri "/login"
+       :default-landing-uri "/"
+       :unauthorized-handler #(-> (content/unauthed-page % (:uri %))
+                                  resp/response
+                                  (resp/status 401))
+       :credential-fn #(creds/bcrypt-credential-fn @users %)
+       :workflows [(workflows/interactive-form)]})))

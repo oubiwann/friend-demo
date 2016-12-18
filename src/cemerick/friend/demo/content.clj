@@ -1,5 +1,6 @@
 (ns cemerick.friend.demo.content
   (:require [clojure.string :as str]
+            [cemerick.friend :as friend]
             [cemerick.friend.demo.users :refer [users]]
             [cemerick.friend.demo.util :as util]
             [hiccup.core]
@@ -22,7 +23,7 @@
   []
   [:div {:class "jumbotron"}
    [:h1 "cemerick.friend.demo"]
-   [:p "…a collection of demonstration apps using "
+   [:p "... a collection of demonstration apps using "
        (element/link-to "http://github.com/cemerick/friend" "Friend")
        ", an authentication and authorization library for securing Clojure web "
        "services and applications."]])
@@ -51,13 +52,13 @@
            relatively painless, but I thought the examples that the project's
            documentation demanded deserved a better forum than to bit-rot in a
            markdown file or somesuch."]
-       [:p {:class "lead"}
+       [:p
            "So, what better than a bunch of live
            demos of each authentication workflow that Friend supports (or is
            available via another library that builds on top of Friend), with
            smatterings of authorization examples here and there, all with links
            to the generally-less-than-10-lines of code that makes it happen?"]
-       [:p {:class "lead"}
+       [:p
            "Check out the demos, find the one(s) that apply to your situation,
            and click the button on the right to go straight to the source for
            that demo:"]
@@ -65,8 +66,10 @@
         [:h2 "Demonstrations"]
         [:ol
          (for [{:keys [name doc route-prefix]} apps]
-           [:li (element/link-to (str route-prefix "/") [:strong name])
-            " — " doc])]]
+           [:li
+            [:p {:class "lead"}
+              (element/link-to (str route-prefix "/") [:strong name])
+            " — " doc]])]]
        [:div {:class "columns small-4"}
         [:h2 "Credentials"]
         [:p "All demo applications here that directly require user-provided
@@ -96,8 +99,8 @@
          "them automatically!), so "
          (element/link-to (util/context-uri req "/logout") "logging out")
           " won't work as expected."]
-     [:p "You can access resources requiring HTTP Basic authentication trivially in "
-         "any HTTP client (like `curl`) with a URL such as:"]
+     [:p "You can access resources requiring HTTP Basic authentication "
+         "trivially in any HTTP client (like `curl`) with a URL such as:"]
      [:p [:code "curl "
          (str/replace (str (util/request-url req) "/requires-authentication")
            #"://" #(str % (-> @users first val :username (str ":clojure@"))))]]
@@ -105,16 +108,115 @@
 
 (defn http-basic-footer
   [req]
-  [:p "You can combine this with Friend's \"channel security\" middleware to enforce the "
-      "use of SSL, making this a good recipe for controlling access to web service APIs."
-      " Head over to "
+  [:p "You can combine this with Friend's \"channel security\" middleware to "
+      "enforce the use of SSL, making this a good recipe for controlling "
+      "access to web service APIs. Head over to "
       (element/link-to (util/context-uri req "/https-basic") "HTTPS Basic")
       " for a demo."])
 
 (defn https-basic-footer
   [req]
-  [:p "Note that because the handler that requires authentication is "
-      "further guarded by "
+  [:p "Note that because the handler that requires authentication is further "
+      "guarded by "
       [:code "cemerick.friend/requires-scheme"]
-      ", all requests to it are redirected over HTTPS "
-      "(even before the HTTP Basic challenge is sent, if required)."])
+      ", all requests to it are redirected over HTTPS (even before the HTTP "
+      "Basic challenge is sent, if required)."])
+
+(def login-form
+  [:form {:class "form-horizontal" :method "POST" :action "login"}
+   [:fieldset
+    [:legend "Login"]
+    [:div {:class "form-group"}
+     [:label {:for "inputEmail" :class "col-lg-2 control-label"}
+       "Email"]
+     [:div {:class "col-lg-10"}
+      [:input {:class "form-control" :id "inputEmail" :placeholder "Email"
+               :type "text" :name "username"}]]]
+    [:div {:class "form-group"}
+     [:label {:for "inputPassword" :class "col-lg-2 control-label"}
+      "Password"]
+     [:div {:class "col-lg-10"}
+      [:input {:class "form-control" :id "inputPassword" :placeholder "Password"
+               :type "password" :name "password"}]]]
+    [:div {:class "form-group"}
+     [:div {:class "col-lg-10 col-lg-offset-2"}
+      [:button {:type "submit" :class "btn btn-primary" :value "Login"}
+        "Login"]]]]])
+
+(defn user-page
+  [req]
+  (hiccup.page/html5
+    head
+    (body
+     [:h2 (-> req :demo :name)]
+     [:p {:class "lead"} "You're a user!"])))
+
+(defn admin-page
+  [req]
+  (hiccup.page/html5
+    head
+    (body
+     [:h2 (-> req :demo :name)]
+     [:p {:class "lead"} "You're an admin!"])))
+
+(defn authed-page
+  [req]
+  (hiccup.page/html5
+    head
+    (body
+     [:h2 (-> req :demo :name)]
+     [:p {:class "lead"} "Thanks for authenticating!"])))
+
+(defn unauthed-page
+  [req uri]
+  (hiccup.page/html5
+    head
+    (body
+     [:h2 (-> req :demo :name)]
+     [:div {:class "alert alert-danger"}
+     [:p {:class "lead"}
+       "You do not have sufficient privileges to access "
+       uri]])))
+
+(defn interactive-form-page
+  [req]
+  (hiccup.page/html5
+    head
+    (body
+     (github-link req)
+     [:h2 "Interactive form authentication"]
+     [:p {:class "lead"}
+         "This app demonstrates typical username/password authentication, and "
+         "a pinch of Friend's authorization capabilities."]
+     [:h3 "Current Status"]
+     [:h4 (if-let [identity (friend/identity req)]
+            [:div {:class "alert alert-success"}
+             (apply str "Logged in, with these roles: "
+               (-> identity
+                   friend/current-authentication
+                   :roles))]
+            [:div {:class "alert alert-warning"}
+              "Anonymous user"])]
+     login-form
+     [:h3 "Authorization demos"]
+     [:p "Each of these links require particular roles (or, any "
+         "authentication) to access. If you're not authenticated, you will be "
+         "redirected to a dedicated login page. If you're already "
+         "authenticated, but do not meet the authorization requirements (e.g. "
+         "you don't have the proper role), then you'll get an Unauthorized "
+         "HTTP response."]
+     [:ul
+      [:li (element/link-to
+             (util/context-uri req "role-user")
+             "Requires the `user` role")]
+      [:li (element/link-to
+             (util/context-uri req "role-admin")
+             "Requires the `admin` role")]
+      [:li (element/link-to
+             (util/context-uri req "requires-authentication")
+             "Requires any authentication, no specific role requirement")]]
+     [:h3 "Logging out"]
+     [:p "Click below to log out."]
+     [:p [:a {:class "btn btn-primary"
+              :href (util/context-uri req "logout")}
+       "Logout"]])))

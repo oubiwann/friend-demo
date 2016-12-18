@@ -39,4 +39,7 @@
 
 (defn ns->context
   [ns]
-  (str "/" (-> ns ns-name name (subs (inc (count ns-prefix))))))
+  (str "/" (-> ns
+               ns-name
+               name
+               (subs (inc (count ns-prefix))))))

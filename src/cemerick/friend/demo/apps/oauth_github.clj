@@ -4,6 +4,7 @@
   (:require [cemerick.friend.demo [content :as content]
                                   [users :as users :refer [users]]
                                   [util :as util]]
+            [cemerick.friend.demo.content.fragment :as fragment]
             [cemerick.friend :as friend]
             [cemerick.friend [workflows :as workflows]
                              [credentials :as creds]]
@@ -44,9 +45,9 @@
 (compojure/defroutes routes
   (GET "/" req
     (h/html5
-      content/head
-      (content/body
-        (content/github-link req)
+      fragment/head
+      (fragment/body
+        (fragment/github-link req)
         [:h2 "Authenticating via GitHub using OAuth2 [EXPERIMENTAL]"]
         [:h3 "Current Status " [:small "(this will change when you log in/out)"]]
         (if-let [identity (friend/identity req)]

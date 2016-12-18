@@ -5,6 +5,7 @@
   (:require [cemerick.friend.demo [content :as content]
                                   [users :as users :refer [users]]
                                   [util :as util]]
+            [cemerick.friend.demo.content.fragment :as fragment]
             [cemerick.friend :as friend]
             (cemerick.friend [workflows :as workflows]
                              [credentials :as creds])
@@ -46,9 +47,9 @@
 (compojure/defroutes routes
   (GET "/" req
     (h/html5
-      content/head
-      (content/body
-       (content/github-link req)
+      fragment/head
+      (fragment/body
+       (fragment/github-link req)
        [:h2 "Sign up and authenticated redirect"]
        [:p "This app demonstrates form-based sign-up and redirect to an authenticated space."]
        [:h3 "Current Status " [:small "(this will change when you log in/out)"]]
@@ -69,7 +70,7 @@
        [:h3 "Logging out"]
        [:p (e/link-to (util/context-uri req "logout") "Click here to log out") "."])))
   (GET "/login" req
-    (h/html5 content/head (content/body login-form)))
+    (content/interactive-form-page req))
   (POST "/signup" {{:keys [username password confirm] :as params} :params :as req}
         (if (and (not-any? str/blank? [username password confirm])
                  (= password confirm))
@@ -92,9 +93,9 @@
                (let [user (:user (req :params))]
            (if (= user (:username (friend/current-authentication)))
                                (h/html5
-                                 content/head
-                                 (content/body
-                                   (content/github-link req)
+                                 fragment/head
+                                 (fragment/body
+                                   (fragment/github-link req)
                                    [:h2 (str "Hello, new user " user "!")]
                                    [:p "Return to the " (e/link-to (util/context-uri req "") "example")
                                  ", or " (e/link-to (util/context-uri req "logout") "log out") "."]))

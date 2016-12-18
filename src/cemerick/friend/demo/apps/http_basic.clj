@@ -4,6 +4,7 @@
   (:require [cemerick.friend.demo [content :as content]
                                   [users :refer [users]]
                                   [util :as util]]
+            [cemerick.friend.demo.content.fragment :as fragment]
             [cemerick.friend :as friend]
             [cemerick.friend [workflows :as workflows]
                              [credentials :as creds]]
@@ -32,4 +33,4 @@
   (GET "/" req
     (content/http-basic-page
       req
-      (content/http-basic-footer req))))
+      (fragment/http-basic-footer req))))

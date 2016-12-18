@@ -3,6 +3,7 @@
   cemerick.friend.demo.apps.openid
   (:require [cemerick.friend.demo [content :as content]
                                   [util :as util]]
+            [cemerick.friend.demo.content.fragment :as fragment]
             [cemerick.friend :as friend]
             [cemerick.friend.openid :as openid]
             [compojure.core :refer (GET defroutes)]
@@ -18,9 +19,9 @@
 (defroutes routes
   (GET "/" req
     (h/html5
-      content/head
-      (content/body
-        (content/github-link req)
+      fragment/head
+      (fragment/body
+        (fragment/github-link req)
         [:h2 "Authenticating with various services using OpenID"]
         [:h3 "Current Status " [:small "(this will change when you log in/out)"]]
         (if-let [auth (friend/current-authentication req)]

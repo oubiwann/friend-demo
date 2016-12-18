@@ -5,6 +5,7 @@
   (:require [cemerick.friend :as friend]
             [cemerick.friend.demo.apps.http-basic :as basic]
             [cemerick.friend.demo.content :as content]
+            [cemerick.friend.demo.content.fragment :as fragment]
             [compojure.core :refer [GET]]
             [compojure.handler :refer [site]]))
 
@@ -19,4 +20,4 @@
   (GET "/" req
     (content/http-basic-page
       req
-      (content/https-basic-footer req))))
+      (fragment/https-basic-footer req))))

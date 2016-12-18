@@ -12,13 +12,13 @@
             [compojure [handler :as handler]
                        [route :as route]]
             [ring.util.response :as resp]
-            [hiccup.page :as h]))
+            [hiccup.page :as page]))
 
 (defroutes routes
   (GET "/" req
     (content/interactive-form-page req))
   (GET "/login" req
-    (h/html5 content/head (content/body content/login-form)))
+    (content/login-page req))
   (GET "/logout" req
     (friend/logout* (resp/redirect (str (:context req) "/"))))
   (GET "/requires-authentication" req

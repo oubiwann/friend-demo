@@ -2,6 +2,7 @@
       :doc "Use multi-factor authentication in a Ring app."}
   cemerick.friend.demo.apps.multi-factor
   (:require [cemerick.friend.demo [content :as content]
+                                  [roles :as roles]
                                   [users :refer [users]]
                                   [util :as util]]
             [cemerick.friend :as friend]
@@ -42,24 +43,24 @@
            {::friend/workflow :multi-factor
             ::friend/redirect-on-auth? true})
          (content/pin-page req user-record true)))
-    ; (GET "/role-user" req
-    ;   (friend/authorize #{::users/user} (content/user-page req)))
-    ; (GET "/role-admin" req
-    ;   (friend/authorize #{::users/admin} (content/admin-page req)))
-    ))
+    (GET "/role-user" req
+      (friend/authorize #{roles/user} (content/user-page req)))
+    (GET "/role-admin" req
+      (friend/authorize #{roles/admin} (content/admin-page req)))))
 
 (defroutes app*
   (GET "/requires-authentication" req
     (friend/authenticated (content/authed-page req))))
 
-(def secured-app
-  (friend/authenticate
-    app*
-    {:allow-anon? true
-     :login-uri "/login"
-     :workflows [(multi-factor-workflow :credential-fn @users)]}))
+(def auth-opts
+  {:allow-anon? true
+   :login-uri "/login"
+   :workflows [(multi-factor-workflow :credential-fn @users)]})
 
-(def app (handler/site secured-app))
+(def app
+  (-> app*
+      (friend/authenticate auth-opts)
+      (handler/site)))
 
 (defroutes page
   (GET "/" req

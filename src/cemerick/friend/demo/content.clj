@@ -143,17 +143,22 @@
          "HTTP Basic credentials. Once authenticated, all the authorization "
          "options available in Friend are available to restrict the "
          "permissions of particular users."]
-     [:p "Please note that Chrome (and maybe other browsers) silently save "
-         "HTTP Basic credentials for the duration of the session (and resend "
-         "them automatically!), so "
-         (element/link-to (util/context-uri req "/logout") "logging out")
-          " won't work as expected."]
+     (fragment/get-user-status req)
+     [:div {:class "alert alert-info"}
+      [:p {:class "lead"}
+        "Note: that Chrome (and maybe other browsers) silently save "
+        "HTTP Basic credentials for the duration of the session (and resend "
+        "them automatically!), so "
+        (element/link-to (util/context-uri req "/logout") "logging out")
+        " won't work as expected."]]
+     (fragment/get-protected-links req)
      [:p "You can access resources requiring HTTP Basic authentication "
          "trivially in any HTTP client (like `curl`) with a URL such as:"]
      [:p [:code "curl "
          (string/replace (str (util/request-url req) "/requires-authentication")
            #"://" #(str % (-> @users first val :username (str ":clojure@"))))]]
-     footer)))
+     footer
+     (fragment/logging-out-section req))))
 
 (defn interactive-form-page
   [req]

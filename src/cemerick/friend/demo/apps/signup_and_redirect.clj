@@ -3,6 +3,7 @@
            space."}
   cemerick.friend.demo.apps.signup-and-redirect
   (:require [cemerick.friend.demo [content :as content]
+                                  [roles :as roles]
                                   [users :as users :refer [users]]
                                   [util :as util]]
             [cemerick.friend.demo.content.fragment :as fragment]
@@ -22,7 +23,7 @@
   (-> (dissoc user-data :admin)
       (assoc :identity username
              :password (creds/hash-bcrypt password)
-             :roles (into #{::users/user} (when admin [::users/admin])))))
+             :roles (into #{roles/user} (when admin [roles/admin])))))
 
 (defn- signup-form
   [flash]
@@ -85,9 +86,9 @@
   (GET "/requires-authentication" req
     (friend/authenticated "Thanks for authenticating!"))
   (GET "/role-user" req
-    (friend/authorize #{::users/user} "You're a user!"))
+    (friend/authorize #{roles/user} "You're a user!"))
   (GET "/role-admin" req
-    (friend/authorize #{::users/admin} "You're an admin!"))
+    (friend/authorize #{roles/admin} "You're an admin!"))
   (GET "/:user" req
        (friend/authenticated
                (let [user (:user (req :params))]
@@ -101,14 +102,17 @@
                                  ", or " (e/link-to (util/context-uri req "logout") "log out") "."]))
              (resp/redirect (str (:context req) "/")))))))
 
-(def page (handler/site
-            (friend/authenticate
-              routes
-              {:allow-anon? true
-               :login-uri "/login"
-               :default-landing-uri "/"
-               :unauthorized-handler #(-> (h/html5 [:h2 "You do not have sufficient privileges to access " (:uri %)])
-                                          resp/response
-                                          (resp/status 401))
-               :credential-fn #(creds/bcrypt-credential-fn @users %)
-               :workflows [(workflows/interactive-form)]})))
+(def auth-opts
+  {:allow-anon? true
+   :login-uri "/login"
+   :default-landing-uri "/"
+   :unauthorized-handler #(-> (h/html5 [:h2 "You do not have sufficient privileges to access " (:uri %)])
+                              resp/response
+                              (resp/status 401))
+   :credential-fn #(creds/bcrypt-credential-fn @users %)
+   :workflows [(workflows/interactive-form)]})
+
+(def app
+  (-> routes
+      (friend/authenticate auth-opts)
+      (handler/site)))

@@ -51,11 +51,14 @@
   (GET "/logout" req
     (friend/logout* (resp/redirect (str (:context req) "/")))))
 
-(def page (handler/site
-            (friend/authenticate
-              routes
-              {:allow-anon? true
-               :default-landing-uri "/"
-               :workflows [(openid/workflow
-                             :openid-uri "/login"
-                             :credential-fn identity)]})))
+(def auth-opts
+  {:allow-anon? true
+   :default-landing-uri "/"
+   :workflows [(openid/workflow
+                 :openid-uri "/login"
+                 :credential-fn identity)]})
+
+(def app
+  (-> routes
+      (friend/authenticate auth-opts)
+      (handler/site)))

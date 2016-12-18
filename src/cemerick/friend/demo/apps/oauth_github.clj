@@ -2,6 +2,7 @@
       :doc "Authenticating via GitHub using OAuth2 [EXPERIMENTAL]."}
   cemerick.friend.demo.apps.oauth-github
   (:require [cemerick.friend.demo [content :as content]
+                                  [roles :as roles]
                                   [users :as users :refer [users]]
                                   [util :as util]]
             [cemerick.friend.demo.content.fragment :as fragment]
@@ -79,9 +80,9 @@
   (GET "/requires-authentication" req
     (friend/authenticated "Thanks for authenticating!"))
   (GET "/role-user" req
-    (friend/authorize #{::users/user} "You're a user!"))
+    (friend/authorize #{roles/user} "You're a user!"))
   #_(GET "/role-admin" req
-    (friend/authorize #{::users/admin} "You're an admin!")))
+    (friend/authorize #{roles/admin} "You're an admin!")))
 
 (def client-config
   {:client-id client-id
@@ -104,17 +105,20 @@
                               :redirect_uri (oauth2-util/format-config-uri client-config)
                               :code ""}}})
 
-(def page (handler/site
-            (friend/authenticate
-              routes
-              {:allow-anon? true
-               :default-landing-uri "/"
-               :login-uri (str "/" callback-path-segment)
-               :unauthorized-handler #(-> (h/html5 [:h2 "You do not have sufficient privileges to access " (:uri %)])
-                                          resp/response
-                                          (resp/status 401))
-               :workflows [(oauth2/workflow
-                             {:client-config client-config
-                              :uri-config uri-config
-                              :config-auth {:roles #{::users/user}}
-                              :access-token-parsefn #(-> % :body codec/form-decode (get "access_token"))})]})))
+(def auth-opts
+  {:allow-anon? true
+   :default-landing-uri "/"
+   :login-uri (str "/" callback-path-segment)
+   :unauthorized-handler #(-> (h/html5 [:h2 "You do not have sufficient privileges to access " (:uri %)])
+                              resp/response
+                              (resp/status 401))
+   :workflows [(oauth2/workflow
+                 {:client-config client-config
+                  :uri-config uri-config
+                  :config-auth {:roles #{roles/user}}
+                  :access-token-parsefn #(-> % :body codec/form-decode (get "access_token"))})]})
+
+(def app
+  (-> routes
+      (friend/authenticate auth-opts)
+      (handler/site)))

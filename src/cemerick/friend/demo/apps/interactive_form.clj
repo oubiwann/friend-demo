@@ -3,14 +3,14 @@
            authorization functionality."}
   cemerick.friend.demo.apps.interactive-form
   (:require [cemerick.friend.demo [content :as content]
+                                  [roles :as roles]
                                   [users :as users :refer [users]]
                                   [util :as util]]
             [cemerick.friend :as friend]
             (cemerick.friend [workflows :as workflows]
                              [credentials :as creds])
             [compojure.core :as compojure :refer [GET POST ANY defroutes]]
-            [compojure [handler :as handler]
-                       [route :as route]]
+            [compojure.handler :as handler]
             [ring.util.response :as resp]
             [hiccup.page :as page]))
 
@@ -24,19 +24,21 @@
   (GET "/requires-authentication" req
     (friend/authenticated (content/authed-page req)))
   (GET "/role-user" req
-    (friend/authorize #{::users/user} (content/user-page req)))
+    (friend/authorize #{roles/user} (content/user-page req)))
   (GET "/role-admin" req
-    (friend/authorize #{::users/admin} (content/admin-page req))))
+    (friend/authorize #{roles/admin} (content/admin-page req))))
+
+(def auth-opts
+  {:allow-anon? true
+   :login-uri "/login"
+   :default-landing-uri "/"
+   :unauthorized-handler #(-> (content/unauthed-page % (:uri %))
+                              resp/response
+                              (resp/status 401))
+   :credential-fn #(creds/bcrypt-credential-fn @users %)
+   :workflows [(workflows/interactive-form)]})
 
 (def app
-  (handler/site
-    (friend/authenticate
-      routes
-      {:allow-anon? true
-       :login-uri "/login"
-       :default-landing-uri "/"
-       :unauthorized-handler #(-> (content/unauthed-page % (:uri %))
-                                  resp/response
-                                  (resp/status 401))
-       :credential-fn #(creds/bcrypt-credential-fn @users %)
-       :workflows [(workflows/interactive-form)]})))
+  (-> routes
+      (friend/authenticate auth-opts)
+      (handler/site)))

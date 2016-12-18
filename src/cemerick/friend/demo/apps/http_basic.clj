@@ -2,6 +2,7 @@
       :doc "Use HTTP Basic to authenticate to a Ring app."}
   cemerick.friend.demo.apps.http-basic
   (:require [cemerick.friend.demo [content :as content]
+                                  [roles :as roles]
                                   [users :refer [users]]
                                   [util :as util]]
             [cemerick.friend.demo.content.fragment :as fragment]
@@ -9,28 +10,36 @@
             [cemerick.friend [workflows :as workflows]
                              [credentials :as creds]]
             [compojure.core :refer [GET defroutes]]
-            [compojure.handler :refer [site]]
+            [compojure.handler :as handler]
             [hiccup.page :as h]
             [hiccup.element :as element]
-            [clojure.string :as str]))
+            [ring.util.response :as resp]))
 
-(defroutes app*
-  (GET "/requires-authentication" req
-       (friend/authenticated (str "You have successfully authenticated as "
-                                  (friend/current-authentication)))))
+(def realm "Friend Demo")
 
-(def secured-app (friend/authenticate
-                   app*
-                   {:allow-anon? true
-                    :unauthenticated-handler #(workflows/http-basic-deny "Friend demo" %)
-                    :workflows [(workflows/http-basic
-                                 :credential-fn #(creds/bcrypt-credential-fn @users %)
-                                 :realm "Friend demo")]}))
-
-(def app (site secured-app))
-
-(defroutes page
+(defroutes routes
   (GET "/" req
     (content/http-basic-page
       req
-      (fragment/http-basic-footer req))))
+      (fragment/http-basic-footer req)))
+  (GET "/logout" req
+    (friend/logout* (resp/redirect (str (:context req) "/"))))
+  (GET "/requires-authentication" req
+    (friend/authenticated (content/authed-page req)))
+  (GET "/role-user" req
+    (friend/authorize #{roles/user} (content/user-page req)))
+  (GET "/role-admin" req
+    (friend/authorize #{roles/admin} (content/admin-page req))))
+
+(def auth-opts
+  {:allow-anon? true
+   :unauthorized-handler #(-> (content/unauthed-page % (:uri %))
+                              resp/response
+                              (resp/status 401))
+   :workflows [(workflows/http-basic
+                :credential-fn #(creds/bcrypt-credential-fn @users %)
+                :realm realm)]})
+(def app
+  (-> routes
+      (friend/authenticate auth-opts)
+      (handler/site)))

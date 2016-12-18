@@ -1,4 +1,4 @@
-(ns ^{:name "Interactive form"
+(ns ^{:name "Interactive Form Authentication"
       :doc "Typical username/password authentication + logout + a pinch of
            authorization functionality."}
   cemerick.friend.demo.apps.interactive-form
@@ -14,7 +14,7 @@
             [ring.util.response :as resp]
             [hiccup.page :as h]))
 
-(compojure/defroutes routes
+(defroutes routes
   (GET "/" req
     (content/interactive-form-page req))
   (GET "/login" req
@@ -28,7 +28,7 @@
   (GET "/role-admin" req
     (friend/authorize #{::users/admin} (content/admin-page req))))
 
-(def page
+(def app
   (handler/site
     (friend/authenticate
       routes

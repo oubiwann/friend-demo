@@ -73,6 +73,27 @@
     [:input {:class "form-control" :id "inputPIN" :placeholder "PIN"
              :type "text" :name "pin"}]]])
 
+(defn supported-openid-input
+  [name url dom-id]
+  (html
+    [:div {:class "form-group"}
+     [:label {:for "inputOpenID" :class "col-lg-2 control-label"}
+      [:p {:class "lead"} name]]
+     [:div {:class "col-lg-10"}
+      [:button {:type "submit" :class "btn btn-primary" :value name}
+        "Login"]
+      [:input {:class "form-control" :id dom-id
+               :placeholder "identifier" :type "hidden" :name "identifier"
+               :value url}]]]))
+
+(def custom-openid-input
+  [:div {:class "form-group"}
+   [:label {:for "inputOpenIDIdentifier" :class "col-lg-2 control-label"}
+    "OpenID URL"]
+   [:div {:class "col-lg-10"}
+    [:input {:class "form-control" :id "inputOpenIDIdentifier"
+             :placeholder "identifier" :type "text" :name "identifier"}]]])
+
 (defn login-button
   ([]
     (login-button "Login"))
@@ -112,6 +133,39 @@
          [:div {:class "alert alert-warning"}
            "Anonymous user"])]))
 
+(defn get-oauth2-user-status
+  [req get-user-handle]
+  (html
+    [:h3 "Current Status"]
+    [:h4 (if-let [identity (friend/identity req)]
+           [:div {:class "alert alert-success"}
+            [:p {:class "lead"}
+              (apply str "Logged in, with these roles: "
+                (-> identity
+                    friend/current-authentication
+                    :roles))]
+            [:p {:class "lead"}
+              "Logged in as OAuth2 user "
+              [:strong (get-user-handle (:current identity))]]
+            [:p {:class "lead"}
+              "OAuth2 access token " (:current identity)]]
+           [:div {:class "alert alert-warning"}
+             "Anonymous user"])]))
+
+(defn get-openid-user-status
+  [req]
+  (html
+    [:h3 "Current Status"]
+    [:h4 (if-let [identity (friend/identity req)]
+           [:div {:class "alert alert-success"}
+            [:p {:class "lead"}
+              (apply str "Logged in, with these roles: "
+                (-> identity
+                    friend/current-authentication
+                    :roles))]]
+           [:div {:class "alert alert-warning"}
+             "Anonymous user"])]))
+
 (defn get-protected-links
   [req]
   (html
@@ -140,3 +194,30 @@
     password-input
     pin-input
     (login-button "Verify PIN")]])
+
+(defn openid-supported-service-login
+  [req providers]
+  [:fieldset
+    [:legend "Services Logins"]
+    (for [{:keys [name url]} providers
+          :let [base-login-url (util/context-uri
+                                 req (str "/login?identifier=" url))
+                dom-id (str (gensym))]]
+      [:form {:class "form-horizontal" :method "POST" :action "login"
+              :onsubmit (when (.contains ^String url "username")
+                          (format "var input = document.getElementById(%s);
+                                  input.value = input.value.replace(
+                                    'username', prompt(
+                                      'What is your %s username?')); return true;"
+                            (str \' dom-id \') name))}
+      (supported-openid-input name url dom-id)])])
+
+(defn openid-freeform-service-login
+  [req]
+  [:form {:class "form-horizontal"
+          :method "POST"
+          :action (util/context-uri req "login")}
+   [:fieldset
+    [:legend "Freeform Login"]
+    custom-openid-input
+    (login-button)]])

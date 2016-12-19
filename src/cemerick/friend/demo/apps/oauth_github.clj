@@ -42,47 +42,21 @@
 ;; Go use an appropriate cache from https://github.com/clojure/core.cache
 (def get-public-repos (memoize (partial call-github "/user/repos?type=public")))
 (def get-github-handle (memoize (comp :login (partial call-github "/user"))))
+(def get-access-token #(-> % :body codec/form-decode (get "access_token")))
 
-(compojure/defroutes routes
+(defroutes routes
   (GET "/" req
-    (h/html5
-      fragment/head
-      (fragment/body
-        (fragment/github-link req)
-        [:h2 "Authenticating via GitHub using OAuth2 [EXPERIMENTAL]"]
-        [:h3 "Current Status " [:small "(this will change when you log in/out)"]]
-        (if-let [identity (friend/identity req)]
-          [:p "Logged in as GitHub user " [:strong (get-github-handle (:current identity))]
-           " with GitHub OAuth2 access token " (:current identity)]
-          [:h3 [:a {:href (:path callback-path-segment)} "Login with GitHub"]])
-
-        (when-let [{access-token :access_token} (friend/current-authentication req)]
-          [:div
-           [:h3 "Some of your public repositories on GitHub, obtained using the access token above:"]
-           [:ul (for [repo (get-public-repos access-token)]
-                  [:li (:full-name repo)])]])
-
-        [:h3 "Authorization demos"]
-        [:p "Each of these links require particular roles (or, any authentication) to access. "
-            "If you're not authenticated, you will be redirected to a dedicated login page. "
-            "If you're already authenticated, but do not meet the authorization requirements "
-            "(e.g. you don't have the proper role), then you'll get an Unauthorized HTTP response."]
-        [:ul [:li (e/link-to (util/context-uri req "role-user") "Requires the `user` role")]
-         ;[:li (e/link-to (util/context-uri req "role-admin") "Requires the `admin` role")]
-         [:li (e/link-to (util/context-uri req "requires-authentication")
-                "Requires any authentication, no specific role requirement")]]
-        [:h3 "Logging out"]
-        [:p (e/link-to (util/context-uri req "logout") "Click here to log out") "."])))
+    (content/github-oauth2-page req get-github-handle get-public-repos))
+  (GET "/login" req
+    (content/login-page req))
   (GET "/logout" req
     (friend/logout* (resp/redirect (str (:context req) "/"))))
-  (GET (str "/" callback-path-segment) req
-    (resp/redirect (str (:context req) "/")))
   (GET "/requires-authentication" req
-    (friend/authenticated "Thanks for authenticating!"))
+    (friend/authenticated (content/authed-page req)))
   (GET "/role-user" req
-    (friend/authorize #{roles/user} "You're a user!"))
+    (friend/authorize #{roles/user} (content/user-page req)))
   #_(GET "/role-admin" req
-    (friend/authorize #{roles/admin} "You're an admin!")))
+    (friend/authorize #{roles/admin} (content/admin-page req))))
 
 (def client-config
   {:client-id client-id
@@ -109,14 +83,14 @@
   {:allow-anon? true
    :default-landing-uri "/"
    :login-uri (str "/" callback-path-segment)
-   :unauthorized-handler #(-> (h/html5 [:h2 "You do not have sufficient privileges to access " (:uri %)])
+   :unauthorized-handler #(-> (content/unauthed-page % (:uri %))
                               resp/response
                               (resp/status 401))
    :workflows [(oauth2/workflow
                  {:client-config client-config
                   :uri-config uri-config
                   :config-auth {:roles #{roles/user}}
-                  :access-token-parsefn #(-> % :body codec/form-decode (get "access_token"))})]})
+                  :access-token-parsefn get-access-token})]})
 
 (def app
   (-> routes

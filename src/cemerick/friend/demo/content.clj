@@ -197,3 +197,86 @@
         "where a random PIN is sent to you via SMS."]
       (fragment/get-protected-links req)
       (fragment/logging-out-section req))))
+
+(defn github-oauth2-page
+  [req get-user-handle get-user-details]
+  (page/html5
+    fragment/head
+    (fragment/body
+      (fragment/github-link req)
+      [:h2 (-> req :demo :name)]
+      [:div {:class "alert alert-danger"}
+       [:p {:class "lead"}
+         "Warning: this demo is very experimental for now."]]
+      [:p {:class "lead"}
+         "This app demonstrates typical username/password authentication, and "
+         "a pinch of Friend's authorization capabilities."]
+      (fragment/get-oauth2-user-status req get-user-handle)
+      (when-let [{access-token :access_token} (friend/current-authentication req)]
+        [:div
+         [:p {:class "lead"}
+           "Some of your public repositories on GitHub,
+           obtained using the access token above:"]
+         [:ul (for [repo (get-user-details access-token)]
+                [:li (:full-name repo)])]])
+      (fragment/get-protected-links req)
+      (fragment/logging-out-section req))))
+
+(defn openid-page
+  [req providers]
+  (page/html5
+    fragment/head
+    (fragment/body
+      (fragment/github-link req)
+      [:h2 (-> req :demo :name)]
+      [:p {:class "lead"}
+         "Authenticating with various services using OpenID."]
+      (fragment/get-openid-user-status req)
+      (if-let [auth (friend/current-authentication req)]
+        [:div
+         [:p {:class "lead"}
+           "Some information delivered by your OpenID provider:"]
+         [:ul (for [[k v] auth
+                    :let [[k v] (if (= :identity k)
+                                  ["Your OpenID identity"
+                                   (str (subs v 0 (* (count v) 2/3)) "...")]
+                                  [k v])]]
+                [:li [:strong (str (name k) ": ")] v])]]
+         [:div
+           (fragment/openid-supported-service-login req providers)
+           [:p {:class "lead"}
+             "... or, with a user-provided OpenID URL:"]
+           (fragment/openid-freeform-service-login req)])
+      (fragment/get-protected-links req)
+      (fragment/logging-out-section req))))
+
+    ; (h/html5
+    ;   fragment/head
+    ;   (fragment/body
+    ;     (fragment/github-link req)
+    ;     [:h2 "Authenticating with various services using OpenID"]
+    ;     [:h3 "Current Status " [:small "(this will change when you log in/out)"]]
+    ;     (if-let [auth (friend/current-authentication req)]
+    ;       [:p "Some information delivered by your OpenID provider:"
+    ;        [:ul (for [[k v] auth
+    ;                   :let [[k v] (if (= :identity k)
+    ;                                 ["Your OpenID identity" (str (subs v 0 (* (count v) 2/3)) "...")]
+    ;                                 [k v])]]
+    ;               [:li [:strong (str (name k) ": ")] v])]]
+    ;       [:div
+    ;        [:h3 "Login with ..."]
+    ;        (for [{:keys [name url]} providers
+    ;              :let [base-login-url (util/context-uri req (str "/login?identifier=" url))
+    ;                    dom-id (str (gensym))]]
+    ;          [:form {:method "POST" :action (util/context-uri req "login")
+    ;                  :onsubmit (when (.contains ^String url "username")
+    ;                              (format "var input = document.getElementById(%s); input.value = input.value.replace('username', prompt('What is your %s username?')); return true;"
+    ;                                (str \' dom-id \') name))}
+    ;            [:input {:type "hidden" :name "identifier" :value url :id dom-id}]
+    ;            [:input {:type "submit" :class "button" :value name}]])
+    ;        [:p "... or, with a user-provided OpenID URL:"]
+    ;        [:form {:method "POST" :action }
+    ;         [:input {:type "text" :name "identifier" :style "width:250px;"}]
+    ;         [:input {:type "submit" :class "button" :value "Login"}]]])
+    ;     [:h3 "Logging out"]
+    ;     [:p [:a {:href (util/context-uri req "logout")} "Click here to log out"] "."])))

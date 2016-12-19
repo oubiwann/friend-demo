@@ -92,7 +92,7 @@
     "OpenID URL"]
    [:div {:class "col-lg-10"}
     [:input {:class "form-control" :id "inputOpenIDIdentifier"
-             :placeholder "identifier" :type "text" :name "identifier"}]]])
+             :placeholder "https://myname.blogspot.com" :type "text" :name "identifier"}]]])
 
 (defn login-button
   ([]

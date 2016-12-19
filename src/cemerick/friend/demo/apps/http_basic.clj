@@ -39,6 +39,7 @@
    :workflows [(workflows/http-basic
                 :credential-fn #(creds/bcrypt-credential-fn @users %)
                 :realm realm)]})
+
 (def app
   (-> routes
       (friend/authenticate auth-opts)

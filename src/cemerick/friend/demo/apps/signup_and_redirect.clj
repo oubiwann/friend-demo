@@ -1,4 +1,4 @@
-(ns ^{:name "Sign-up and redirect"
+(ns ^{:name "Sign-up and Redirect"
       :doc "Form-based all-in-one sign-up and redirect to authenticated
            space."}
   cemerick.friend.demo.apps.signup-and-redirect
@@ -20,93 +20,48 @@
 
 (defn- create-user
   [{:keys [username password admin] :as user-data}]
+  ;; HERE IS WHERE YOU'D PUSH THE USER INTO YOUR DATABASES if desired
   (-> (dissoc user-data :admin)
       (assoc :identity username
              :password (creds/hash-bcrypt password)
              :roles (into #{roles/user} (when admin [roles/admin])))))
 
-(defn- signup-form
-  [flash]
-  [:h3 "Sign up"]
-  [:em "Any user/pass combination will do, as you are creating a new account or profile."]
-  [:form {:method "POST" :action "signup" :class "columns small-4"}
-   [:div "Username" [:input {:type "text" :name "username" :required "required"}]]
-   [:div "Password" [:input {:type "password" :name "password" :required "required"}]]
-   [:div "Confirm" [:input {:type "password" :name "confirm" :required "required"}]]
-   [:div "Make you an admin? " [:input {:type "checkbox" :name "admin"}]]
-   [:div
-    [:input {:type "submit" :class "button" :value "Sign up"}]
-    [:span {:style "padding:0 0 0 10px;color:red;"} flash]]])
-
-(def login-form
-  [[:h3 "Login"]
-    [:form {:method "POST" :action "login" :class "columns small-4"}
-     [:div "Username" [:input {:type "text" :name "username"}]]
-     [:div "Password" [:input {:type "password" :name "password"}]]
-     [:div [:input {:type "submit" :class "button" :value "Login"}]]]])
-
-(compojure/defroutes routes
+(defroutes routes
   (GET "/" req
-    (h/html5
-      fragment/head
-      (fragment/body
-       (fragment/github-link req)
-       [:h2 "Sign up and authenticated redirect"]
-       [:p "This app demonstrates form-based sign-up and redirect to an authenticated space."]
-       [:h3 "Current Status " [:small "(this will change when you log in/out)"]]
-       [:p (if-let [identity (friend/identity req)]
-             (apply str "Logged in, with these roles: "
-               (-> identity friend/current-authentication :roles pr-str))
-             "anonymous user")]
-       (signup-form (:flash req))
-       [:h3 "Authorization demos"]
-       [:p "Each of these links require particular roles (or, any authentication) to access. "
-           "If you're not authenticated, you will be redirected to a dedicated login page. "
-           "If you're already authenticated, but do not meet the authorization requirements "
-           "(e.g. you don't have the proper role), then you'll get an Unauthorized HTTP response."]
-       [:ul [:li (e/link-to (util/context-uri req "role-user") "Requires the `user` role")]
-        [:li (e/link-to (util/context-uri req "role-admin") "Requires the `admin` role")]
-        [:li (e/link-to (util/context-uri req "requires-authentication")
-               "Requires any authentication, no specific role requirement")]]
-       [:h3 "Logging out"]
-       [:p (e/link-to (util/context-uri req "logout") "Click here to log out") "."])))
+    (content/signup-form-page req))
   (GET "/login" req
     (content/interactive-form-page req))
-  (POST "/signup" {{:keys [username password confirm] :as params} :params :as req}
+  (POST "/signup" {{:keys [username password confirm]
+                    :as params} :params :as req}
         (if (and (not-any? str/blank? [username password confirm])
                  (= password confirm))
-          (let [user (create-user (select-keys params [:username :password :admin]))]
-            ;; HERE IS WHERE YOU'D PUSH THE USER INTO YOUR DATABASES if desired
+          (let [user (create-user
+                       (select-keys params [:username :password :admin]))]
             (friend/merge-authentication
               (resp/redirect (util/context-uri req username))
               user))
-          (assoc (resp/redirect (str (:context req) "/")) :flash "passwords don't match!")))
+          (assoc (resp/redirect (str (:context req) "/"))
+                 :flash "Passwords don't match!")))
   (GET "/logout" req
-    (friend/logout* (resp/redirect (str (:context req) "/")) ))
+    (friend/logout* (resp/redirect (str (:context req) "/"))))
   (GET "/requires-authentication" req
-    (friend/authenticated "Thanks for authenticating!"))
+    (friend/authenticated (content/authed-page req)))
   (GET "/role-user" req
-    (friend/authorize #{roles/user} "You're a user!"))
+    (friend/authorize #{roles/user} (content/user-page req)))
   (GET "/role-admin" req
-    (friend/authorize #{roles/admin} "You're an admin!"))
+    (friend/authorize #{roles/admin} (content/admin-page req)))
   (GET "/:user" req
-       (friend/authenticated
-               (let [user (:user (req :params))]
-           (if (= user (:username (friend/current-authentication)))
-                               (h/html5
-                                 fragment/head
-                                 (fragment/body
-                                   (fragment/github-link req)
-                                   [:h2 (str "Hello, new user " user "!")]
-                                   [:p "Return to the " (e/link-to (util/context-uri req "") "example")
-                                 ", or " (e/link-to (util/context-uri req "logout") "log out") "."]))
-             (resp/redirect (str (:context req) "/")))))))
+    (friend/authenticated
+      (let [user (:user (req :params))]
+         (if (= user (:username (friend/current-authentication)))
+           (content/signed-up-user-page req user)
+           (resp/redirect (str (:context req) "/")))))))
 
 (def auth-opts
   {:allow-anon? true
    :login-uri "/login"
    :default-landing-uri "/"
-   :unauthorized-handler #(-> (h/html5 [:h2 "You do not have sufficient privileges to access " (:uri %)])
+   :unauthorized-handler #(-> (content/unauthed-page % (:uri %))
                               resp/response
                               (resp/status 401))
    :credential-fn #(creds/bcrypt-credential-fn @users %)

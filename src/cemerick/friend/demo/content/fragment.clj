@@ -65,6 +65,14 @@
     [:input {:class "form-control" :id "inputPassword" :placeholder "Password"
              :type "password" :name "password"}]]])
 
+(def password-confirm-input
+  [:div {:class "form-group"}
+   [:label {:for "inputConfirmPassword" :class "col-lg-2 control-label"}
+    "Password"]
+   [:div {:class "col-lg-10"}
+    [:input {:class "form-control" :id "inputConfirmPassword"
+             :type "password" :name "confirm"}]]])
+
 (def pin-input
   [:div {:class "form-group"}
    [:label {:for "inputPIN" :class "col-lg-2 control-label"}
@@ -72,6 +80,14 @@
    [:div {:class "col-lg-10"}
     [:input {:class "form-control" :id "inputPIN" :placeholder "PIN"
              :type "text" :name "pin"}]]])
+
+(def admin?-input
+  [:div {:class "form-group"}
+   [:label {:for "inputAdmin" :class "col-lg-2 control-label"}
+    "Make you an admin?"]
+   [:div {:class "col-lg-10"}
+    [:input {:class "form-control" :id "inputAdmin"
+             :type "checkbox" :name "admin"}]]])
 
 (defn supported-openid-input
   [name url dom-id]
@@ -103,6 +119,15 @@
       [:button {:type "submit" :class "btn btn-primary" :value value}
         value]]]))
 
+(defn signup-button
+  ([]
+    (login-button "Sign Up"))
+  ([value]
+    [:div {:class "form-group"}
+     [:div {:class "col-lg-10 col-lg-offset-2"}
+      [:button {:type "submit" :class "btn btn-primary" :value value}
+        value]]]))
+
 (def login-form
   [:form {:class "form-horizontal" :method "POST" :action "login"}
    [:fieldset
@@ -110,6 +135,16 @@
     email-input
     password-input
     (login-button)]])
+
+(def signup-form
+  [:form {:class "form-horizontal" :method "POST" :action "signup"}
+   [:fieldset
+    [:legend "Login"]
+    email-input
+    password-input
+    password-confirm-input
+    admin?-input
+    (signup-button)]])
 
 (defn logging-out-section
   [req]
